@@ -18,49 +18,43 @@
         <div class="sidebar">
             <div class="nav-group">
                 <div class="sidebar-brand">DAILY<span>TRACKER</span></div>
-                <button class="nav-btn active" onclick="navigate('create')">Create Tracker</button>
-                <button class="nav-btn" onclick="navigate('saved')">Saved Trackers</button>
-                <button class="nav-btn" onclick="navigate('rewards')">Level Up Rewards</button>
-                <button class="nav-btn" onclick="navigate('cycle')">Cycle Log</button>
+                <button class="nav-btn active" onclick="window.navigate('create')">Create Tracker</button>
+                <button class="nav-btn" onclick="window.navigate('saved')">Saved Trackers</button>
+                <button class="nav-btn" onclick="window.navigate('rewards')">Level Up Rewards</button>
+                <button class="nav-btn" onclick="window.navigate('cycle')">Cycle Log</button>
             </div>
             
             <div class="spotify-sidebar-card">
                 <div class="spotify-header">
-                    <span class="spotify-icon">🎵</span>
+                    <span class="spotify-icon" id="spotIcon">🎵</span>
                     <div class="spotify-info">
-                        <div class="spotify-title" id="spotTrack">Not Playing</div>
-                        <div class="spotify-status" id="spotStatus">Engine Offline</div>
+                        <div class="spotify-title" id="spotTrack">Not Syncing</div>
+                        <div class="spotify-status" id="spotStatus">Offline</div>
                     </div>
                 </div>
                 <div class="spotify-controls-row">
-                    <button class="spot-mini-btn" onclick="toggleSpotifyPlayback()">Play / Pause</button>
-                    <button class="spot-mini-btn" onclick="swapSpotifyPlaylist()">Next Station</button>
+                    <button class="spot-mini-btn" id="spotLinkBtn" onclick="window.connectLiveSpotify()">Link Live Spotify</button>
                 </div>
-                <audio id="internalAudioEngine" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
             </div>
             
             <div class="sidebar-footer">
                 <div class="auth-profile-box">
-                    <div class="user-summary" onclick="toggleAuthDrawer()">
+                    <div class="user-summary" onclick="window.toggleAuthDrawer()">
                         <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" class="avatar-frame" id="userAvatar">
                         <div class="user-meta-info">
-                            <div class="user-display-name" id="userDisplayName">Guest Account</div>
+                            <div class="user-display-name" id="userDisplayName">Loading Account...</div>
                             <div class="user-status-label" id="userAccountStatus">Local Storage Mode</div>
                         </div>
                     </div>
                     <div class="auth-actions-drawer hidden" id="authActionsDrawer">
-                        <div class="auth-btn-row">
-                            <button class="provider-btn google-color" onclick="executeMockAuth('Google')">Google Connect</button>
-                            <button class="provider-btn discord-color" onclick="executeMockAuth('Discord')">Discord Link</button>
+                        <div class="auth-btn-row" id="authBtnGroup">
+                            <button class="provider-btn google-color" onclick="window.executeLiveAuth('Google')">Google Link</button>
+                            <button class="provider-btn discord-color" onclick="window.executeLiveAuth('Discord')">Discord Link</button>
                         </div>
-                        <div class="profile-edit-fields">
-                            <input type="text" id="editNameInput" class="mini-input" placeholder="Change profile name...">
-                            <input type="text" id="editAvatarInput" class="mini-input" placeholder="Custom image link...">
-                            <button class="manage-icon-btn" style="width:100%;" onclick="saveProfileCustomizations()">Apply Customizations</button>
-                        </div>
+                        <button class="provider-btn hidden" id="logoutBtn" style="background:#ff3366; margin-top:5px;" onclick="window.logoutUser()">Sign Out Account</button>
                     </div>
                 </div>
-                <button class="toggle-btn" onclick="toggleThemeSystem()">Switch Visual Theme</button>
+                <button class="toggle-btn" onclick="window.toggleThemeSystem()">Switch Visual Theme</button>
             </div>
         </div>
 
@@ -68,17 +62,26 @@
             <div class="hud-card">
                 <div class="hud-level">LVL <span><span id="lvlOut">1</span></span></div>
                 <div class="hud-track"><div class="hud-bar" id="barOut"></div></div>
-                <div id="musicXpBadge" class="music-xp-badge hidden">🎧 +0.2 XP/min Active</div>
+                <div id="musicXpBadge" class="music-xp-badge hidden">🎧 Spotify Passive XP Active</div>
             </div>
 
             <div id="panel-create" class="panel active">
+                <div class="custom-creator-box">
+                    <h3>Add Custom Matrix Task</h3>
+                    <div class="custom-input-row">
+                        <input type="text" id="customTaskName" class="luxury-input" placeholder="What is your custom objective task?">
+                        <input type="number" id="customTaskXp" class="luxury-input" style="max-width:140px;" placeholder="XP (Max 30)" max="30" min="1">
+                        <button class="luxury-btn" style="padding:0 25px;" onclick="window.addNewCustomTaskToPool()">Create Task</button>
+                    </div>
+                </div>
+
                 <h2>Custom Day Matrix</h2>
                 <div id="categorizedMatrixContainer"></div>
                 <h3>Current Profile Staging</h3>
                 <div id="stagedReview" class="ledger-box"></div>
                 <div class="console-box">
                     <input type="text" id="registryTitle" class="luxury-input" placeholder="Name today's routine...">
-                    <button class="luxury-btn" onclick="commitRoutineString()">Save Routine</button>
+                    <button class="luxury-btn" onclick="window.commitRoutineString()">Save Routine</button>
                 </div>
             </div>
 
@@ -88,7 +91,7 @@
             </div>
 
             <div id="panel-rewards" class="panel">
-                <h2>Level Up Rewards</h2>
+                <h2>Level Up Rewards (Granular Scale 1-100+)</h2>
                 <div class="rewards-container-scroll">
                     <div class="rewards-matrix-grid" id="rewardsMatrixGrid"></div>
                 </div>
@@ -98,18 +101,18 @@
                 <h2>Automated Biological Predictor</h2>
                 <div class="console-box">
                     <input type="date" id="cycleAnchor" class="luxury-input">
-                    <button class="luxury-btn" onclick="processCycleMetrics()">Log Entry</button>
+                    <button class="luxury-btn" onclick="window.processCycleMetrics()">Log Entry</button>
                 </div>
                 <div class="period-panel-grid" id="cycleOutputDashboard"></div>
             </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="taskSelectorModal" onclick="closeMatrixAppendModal()">
+    <div class="modal-overlay" id="taskSelectorModal" onclick="window.closeMatrixAppendModal()">
         <div class="modal-surface" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>Select Task Template Element</h3>
-                <button class="row-action-btn" onclick="closeMatrixAppendModal()">&times;</button>
+                <button class="row-action-btn" onclick="window.closeMatrixAppendModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalTemplateScroller"></div>
         </div>
@@ -127,13 +130,13 @@
                 <p class="instructional-sub">Select your desired premium item upgrade variation path below:</p>
                 
                 <div class="reward-selection-container-grid">
-                    <div class="reward-selection-option-card" onclick="selectRewardPathOption('A')">
+                    <div class="reward-selection-option-card" onclick="window.selectRewardPathOption('A')">
                         <div class="option-icon">💎</div>
                         <div class="option-title">Reward Variant Path A</div>
                         <p class="option-desc">Unlocks advanced visual layouts and premium digital cosmetic profile themes.</p>
                         <button class="luxury-btn option-action-pill">Choose Path A</button>
                     </div>
-                    <div class="reward-selection-option-card" onclick="selectRewardPathOption('B')">
+                    <div class="reward-selection-option-card" onclick="window.selectRewardPathOption('B')">
                         <div class="option-icon">🔥</div>
                         <div class="option-title">Reward Variant Path B</div>
                         <p class="option-desc">Unlocks custom notification sound banks and exclusive profile title modifiers.</p>
@@ -144,6 +147,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
