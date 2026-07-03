@@ -24,6 +24,21 @@
                 <button class="nav-btn" onclick="navigate('cycle')">Cycle Log</button>
             </div>
             
+            <div class="spotify-sidebar-card">
+                <div class="spotify-header">
+                    <span class="spotify-icon">🎵</span>
+                    <div class="spotify-info">
+                        <div class="spotify-title" id="spotTrack">Not Playing</div>
+                        <div class="spotify-status" id="spotStatus">Engine Offline</div>
+                    </div>
+                </div>
+                <div class="spotify-controls-row">
+                    <button class="spot-mini-btn" onclick="toggleSpotifyPlayback()">Play / Pause</button>
+                    <button class="spot-mini-btn" onclick="swapSpotifyPlaylist()">Next Station</button>
+                </div>
+                <audio id="internalAudioEngine" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+            </div>
+            
             <div class="sidebar-footer">
                 <div class="auth-profile-box">
                     <div class="user-summary" onclick="toggleAuthDrawer()">
@@ -53,6 +68,7 @@
             <div class="hud-card">
                 <div class="hud-level">LVL <span><span id="lvlOut">1</span></span></div>
                 <div class="hud-track"><div class="hud-bar" id="barOut"></div></div>
+                <div id="musicXpBadge" class="music-xp-badge hidden">🎧 +0.2 XP/min Active</div>
             </div>
 
             <div id="panel-create" class="panel active">
@@ -96,6 +112,35 @@
                 <button class="row-action-btn" onclick="closeMatrixAppendModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalTemplateScroller"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="congratulationsRewardModal">
+        <div class="modal-surface congratulation-card-surface" onclick="event.stopPropagation()">
+            <div class="congratulations-glowing-header">
+                <div class="congratulations-sparkle">✨</div>
+                <h2>CONGRATULATIONS!</h2>
+                <p>You have unlocked an elite matrix tier milestone!</p>
+            </div>
+            <div class="modal-body text-center">
+                <div class="milestone-announcement-text">Unlocked Tier Level: <span id="rewardMilestoneLevelText">0</span></div>
+                <p class="instructional-sub">Select your desired premium item upgrade variation path below:</p>
+                
+                <div class="reward-selection-container-grid">
+                    <div class="reward-selection-option-card" onclick="selectRewardPathOption('A')">
+                        <div class="option-icon">💎</div>
+                        <div class="option-title">Reward Variant Path A</div>
+                        <p class="option-desc">Unlocks advanced visual layouts and premium digital cosmetic profile themes.</p>
+                        <button class="luxury-btn option-action-pill">Choose Path A</button>
+                    </div>
+                    <div class="reward-selection-option-card" onclick="selectRewardPathOption('B')">
+                        <div class="option-icon">🔥</div>
+                        <div class="option-title">Reward Variant Path B</div>
+                        <p class="option-desc">Unlocks custom notification sound banks and exclusive profile title modifiers.</p>
+                        <button class="luxury-btn option-action-pill" style="background:#ff85a2;">Choose Path B</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
