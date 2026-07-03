@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Daily Tracker Matrix</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <canvas id="ambient-canvas"></canvas>
+
+    <div id="intro-screen" onclick="triggerNetflixZoom()">
+        <div class="netflix-logo"></div>
+    </div>
+
+    <div id="app-container">
+        <div class="sidebar">
+            <div class="nav-group">
+                <div class="sidebar-brand">DAILY<span>TRACKER</span></div>
+                <button class="nav-btn active" onclick="navigate('create')">Create Tracker</button>
+                <button class="nav-btn" onclick="navigate('saved')">Saved Trackers</button>
+                <button class="nav-btn" onclick="navigate('rewards')">Level Up Rewards</button>
+                <button class="nav-btn" onclick="navigate('cycle')">Cycle Log</button>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="auth-profile-box">
+                    <div class="user-summary" onclick="toggleAuthDrawer()">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" class="avatar-frame" id="userAvatar">
+                        <div class="user-meta-info">
+                            <div class="user-display-name" id="userDisplayName">Guest Account</div>
+                            <div class="user-status-label" id="userAccountStatus">Local Storage Mode</div>
+                        </div>
+                    </div>
+                    <div class="auth-actions-drawer hidden" id="authActionsDrawer">
+                        <div class="auth-btn-row">
+                            <button class="provider-btn google-color" onclick="executeMockAuth('Google')">Google Connect</button>
+                            <button class="provider-btn discord-color" onclick="executeMockAuth('Discord')">Discord Link</button>
+                        </div>
+                        <div class="profile-edit-fields">
+                            <input type="text" id="editNameInput" class="mini-input" placeholder="Change profile name...">
+                            <input type="text" id="editAvatarInput" class="mini-input" placeholder="Custom image link...">
+                            <button class="manage-icon-btn" style="width:100%;" onclick="saveProfileCustomizations()">Apply Customizations</button>
+                        </div>
+                    </div>
+                </div>
+                <button class="toggle-btn" onclick="toggleThemeSystem()">Switch Visual Theme</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="hud-card">
+                <div class="hud-level">LVL <span><span id="lvlOut">1</span></span></div>
+                <div class="hud-track"><div class="hud-bar" id="barOut"></div></div>
+            </div>
+
+            <div id="panel-create" class="panel active">
+                <h2>Custom Day Matrix</h2>
+                <div id="categorizedMatrixContainer"></div>
+                <h3>Current Profile Staging</h3>
+                <div id="stagedReview" class="ledger-box"></div>
+                <div class="console-box">
+                    <input type="text" id="registryTitle" class="luxury-input" placeholder="Name today's routine...">
+                    <button class="luxury-btn" onclick="commitRoutineString()">Save Routine</button>
+                </div>
+            </div>
+
+            <div id="panel-saved" class="panel">
+                <h2>Your Saved Routines</h2>
+                <div id="savedContainer"></div>
+            </div>
+
+            <div id="panel-rewards" class="panel">
+                <h2>Level Up Rewards</h2>
+                <div class="rewards-container-scroll">
+                    <div class="rewards-matrix-grid" id="rewardsMatrixGrid"></div>
+                </div>
+            </div>
+
+            <div id="panel-cycle" class="panel">
+                <h2>Automated Biological Predictor</h2>
+                <div class="console-box">
+                    <input type="date" id="cycleAnchor" class="luxury-input">
+                    <button class="luxury-btn" onclick="processCycleMetrics()">Log Entry</button>
+                </div>
+                <div class="period-panel-grid" id="cycleOutputDashboard"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="taskSelectorModal" onclick="closeMatrixAppendModal()">
+        <div class="modal-surface" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Select Task Template Element</h3>
+                <button class="row-action-btn" onclick="closeMatrixAppendModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalTemplateScroller"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
