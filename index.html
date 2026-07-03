@@ -1,148 +1,322 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Daily Tracker Matrix</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Matrix Routine Tracker & Personal Sync</title>
+    <style>
+        :root {
+            --bg-main: #0a0a0c;
+            --bg-sidebar: #111115;
+            --card-bg: #16161f;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --cherry-glow: #ff85a2;
+            --cherry-dark: #ff477e;
+            --border-color: rgba(255, 133, 162, 0.15);
+        }
+
+        [data-theme="light"] {
+            --bg-main: #f9fafb;
+            --bg-sidebar: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --cherry-glow: #ff477e;
+            --cherry-dark: #d91b5c;
+            --border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; transition: background 0.3s, color 0.3s; }
+        body, html { margin: 0; padding: 0; background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; }
+
+        /* CINEMATIC INTRO OVERLAY */
+        #intro-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease, transform 0.8s ease; }
+        #intro-screen.zoom-trigger { opacity: 0; transform: scale(1.2); pointer-events: none; }
+        .intro-btn { background: none; border: 2px solid var(--cherry-glow); color: var(--cherry-glow); padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 30px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 15px var(--border-color); transition: all 0.3s; }
+        .intro-btn:hover { background: var(--cherry-glow); color: #000; box-shadow: 0 0 25px var(--cherry-glow); }
+
+        /* BACKGROUND ENGINE CANVASES */
+        #ambient-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+
+        /* CORE WORKSPACE APP WRAPPER */
+        #app-container { display: flex; width: 100vw; height: 100vh; position: relative; z-index: 2; opacity: 0; transition: opacity 0.5s; }
+        #app-container.visible { opacity: 1; }
+
+        /* SIDEBAR COMPONENT */
+        aside { width: 280px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px; }
+        .profile-card { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+        .profile-card img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--cherry-glow); object-fit: cover; margin-bottom: 10px; }
+        .profile-card h3 { margin: 0; font-size: 1.1rem; color: var(--text-main); }
+        .profile-card p { margin: 4px 0 0; font-size: 0.8rem; color: var(--text-muted); }
+
+        .nav-group { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .nav-btn { background: none; border: 1px solid transparent; color: var(--text-muted); text-align: left; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; justify-content: space-between; }
+        .nav-btn:hover, .nav-btn.active { color: var(--cherry-glow); background: rgba(255, 133, 162, 0.08); border-color: var(--border-color); }
+        .hidden { display: none !important; }
+
+        /* PROGRESS FOOTER SYSTEM HUD */
+        .hud-zone { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-top: auto; }
+        .hud-stats { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; }
+        .xp-bar-outer { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .xp-bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cherry-glow), var(--cherry-dark)); transition: width 0.4s ease; }
+
+        /* VIEWPORT CANVAS SHEETS */
+        main { flex: 1; height: 100%; padding: 30px; overflow-y: auto; position: relative; }
+        .panel { display: none; height: 100%; flex-direction: column; }
+        .panel.active { display: flex; }
+
+        h1 { margin-top: 0; font-size: 1.8rem; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; color: var(--cherry-glow); }
+        
+        /* CARD MATRIX STYLING CORES */
+        .category-section { margin-bottom: 30px; }
+        .category-title { font-size: 1.1rem; font-weight: bold; color: var(--cherry-glow); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .matrix-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .matrix-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .matrix-card-title { font-size: 0.9rem; line-height: 1.4; padding-right: 10px; }
+        
+        .cart-counter { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 4px 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .cart-btn { background: none; border: none; color: var(--cherry-glow); font-size: 1.2rem; cursor: pointer; padding: 0 6px; font-weight: bold; }
+        .cart-value { font-weight: bold; font-size: 0.95rem; min-width: 15px; text-align: center; }
+
+        /* CONFIG STAGING SUB-GRID STRUCTURES */
+        .staging-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; margin-top: 20px; min-height: 400px; }
+        .staging-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
+        .ledger-box { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 350px; padding: 5px; }
+        .ledger-row { background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.03); padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem; cursor: pointer; }
+        .ledger-row:hover { background: rgba(255,133,162,0.05); border-color: var(--border-color); }
+        
+        .input-element { width: 100%; padding: 12px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: #fff; border-radius: 8px; margin-bottom: 15px; font-size: 0.95rem; }
+        .action-submit-btn { width: 100%; padding: 14px; border: none; background: linear-gradient(135deg, var(--cherry-glow), var(--cherry-dark)); color: #000; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 1px; box-shadow: 0 4px 12px var(--border-color); }
+        .action-submit-btn:hover { filter: brightness(1.1); }
+
+        /* ACCORDION ACCENT STRUCTURES */
+        .routine-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 12px; overflow: hidden; cursor: pointer; }
+        .routine-bar-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1rem; background: rgba(255,255,255,0.01); }
+        .routine-content-accordion { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: rgba(0,0,0,0.1); }
+        .routine-content-accordion.open { max-height: 2000px; padding: 20px; border-top: 1px solid var(--border-color); }
+        
+        .timeline-sub-container { margin-bottom: 20px; }
+        .timeline-sub-header { font-size: 0.85rem; font-weight: bold; color: var(--cherry-glow); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+        .checked-row { opacity: 0.6; text-decoration: line-through; background: rgba(255,133,162,0.03) !important; border-color: rgba(255,133,162,0.1) !important; }
+        .custom-check { transform: scale(1.2); accent-color: var(--cherry-glow); cursor: pointer; margin-right: 12px; }
+        .row-action-btn { background: none; border: none; color: #ff4444; cursor: pointer; font-size: 1.2rem; line-height: 1; }
+        .profile-manage-actions { display: flex; gap: 10px; }
+        .manage-icon-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-main); font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+
+        /* LEVEL MATRIX GRID REWARDS CHART */
+        .rewards-wrapper-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 10px 0; }
+        .reward-tier-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 15px; opacity: 0.5; position: relative; }
+        .reward-tier-card.unlocked-claimable { opacity: 1; border-color: var(--cherry-glow); box-shadow: 0 0 15px var(--border-color); }
+        .reward-tier-card.claimed { opacity: 1; border-color: #10b981; background: linear-gradient(185deg, var(--card-bg), rgba(16,185,129,0.03)); }
+        
+        .tier-badge { font-size: 1.1rem; font-weight: bold; color: var(--cherry-glow); }
+        .reward-tier-card.claimed .tier-badge { color: #10b981; }
+        .reward-options-stack { display: flex; gap: 8px; width: 100%; justify-content: center; }
+        .reward-mini-pill { font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); }
+        
+        .redeem-trigger-btn { width: 100%; padding: 10px; border: 1px solid var(--border-color); background: none; color: var(--cherry-glow); font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .unlocked-claimable .redeem-trigger-btn { background: var(--cherry-glow); color: #000; border: none; box-shadow: 0 4px 10px var(--border-color); }
+        .claimed .redeem-trigger-btn { background: rgba(16,185,129,0.1); color: #10b981; border-color: rgba(16,185,129,0.2); cursor: default; }
+
+        /* AUTH SECTIONS DRAWERS & CONGRATS OVERLAYS */
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .drawer-overlay.open { display: flex; }
+        .modal-card-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px; width: 100%; max-width: 440px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+        
+        .modal-scroll-menu { max-height: 300px; overflow-y: auto; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; background: rgba(0,0,0,0.2); }
+        .modal-item-row { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; font-size: 0.9rem; }
+        .modal-item-row:hover { background: rgba(255,133,162,0.08); color: var(--cherry-glow); }
+
+        .auth-drawer-panel { position: absolute; right: 20px; top: 75px; background: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 50; width: 220px; }
+        .drawer-action-btn { width: 100%; text-align: center; padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); color: #fff; font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+        .drawer-action-btn:hover { border-color: var(--cherry-glow); color: var(--cherry-glow); }
+
+        /* SPOTIFY STREAM SYSTEMS COMPONENTS */
+        .spotify-card-stream { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .spot-info-group { display: flex; align-items: center; gap: 15px; }
+        .spot-pulse-icon { width: 45px; height: 45px; background: #1ed760; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #000; position: relative; }
+        .playing-wave::before { content: ''; position: absolute; inset: -4px; border: 2px solid #1ed760; border-radius: 50%; animation: spotPulse 1.6s infinite linear; }
+        @keyframes spotPulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.3); opacity: 0; } }
+        .spot-pill-badge { font-size: 0.7rem; font-weight: bold; background: rgba(30,215,96,0.1); color: #1ed760; border: 1px solid rgba(30,215,96,0.2); padding: 2px 8px; border-radius: 10px; margin-left: 10px; }
+
+        /* HORMONAL CYCLE CARDS DASHBOARD */
+        .period-card-dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+        .period-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.03); border-radius: 10px; padding: 15px; opacity: 0.4; }
+        .period-card.current { opacity: 1; border-color: var(--cherry-glow); box-shadow: 0 0 10px var(--border-color); background: linear-gradient(145deg, var(--card-bg), rgba(255,133,162,0.02)); }
+        .period-card-title { font-weight: bold; font-size: 0.95rem; margin-bottom: 6px; color: var(--cherry-glow); }
+
+        /* THEME TOGGLE ACCENT ATOMS */
+        .top-action-header-bar { display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-bottom: 20px; width: 100%; position: relative; }
+        .accent-icon-circle-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .accent-icon-circle-btn:hover { color: var(--cherry-glow); border-color: var(--cherry-glow); }
+        
+        /* LAYOUT FIX FOR INPUT FIELD CONTROLS WITHIN THE CONFIGURATOR CARD */
+        .custom-profile-editor-card input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; box-sizing: border-box; font-size: 0.9rem; }
+        [data-theme="light"] .custom-profile-editor-card input { background: #f3f4f6; color: #111; border-color: rgba(0,0,0,0.1); }
+    </style>
 </head>
 <body>
 
+    <div id="intro-screen">
+        <button class="intro-btn" onclick="window.triggerNetflixZoom()">Initialize Dashboard Matrix</button>
+    </div>
+
     <canvas id="ambient-canvas"></canvas>
 
-    <div id="intro-screen" onclick="triggerNetflixZoom()">
-        <div class="netflix-logo"></div>
-    </div>
-
     <div id="app-container">
-        <div class="sidebar">
-            <div class="nav-group">
-                <div class="sidebar-brand">DAILY<span>TRACKER</span></div>
-                <button class="nav-btn active" onclick="window.navigate('create')">Create Tracker</button>
-                <button class="nav-btn" onclick="window.navigate('saved')">Saved Trackers</button>
-                <button class="nav-btn" onclick="window.navigate('rewards')">Level Up Rewards</button>
-                <button class="nav-btn" onclick="window.navigate('cycle')">Cycle Log</button>
+        
+        <aside>
+            <div class="profile-card">
+                <img id="userAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar">
+                <h3 id="userDisplayName">Guest Account</h3>
+                <p id="userAccountStatus">Local Storage Mode</p>
             </div>
-            
-            <div class="spotify-sidebar-card">
-                <div class="spotify-header">
-                    <span class="spotify-icon" id="spotIcon">🎵</span>
-                    <div class="spotify-info">
-                        <div class="spotify-title" id="spotTrack">Not Syncing</div>
-                        <div class="spotify-status" id="spotStatus">Offline</div>
+
+            <nav class="nav-group">
+                <button class="nav-btn active" onclick="window.navigate('create')">Create Routine Matrix <span>➔</span></button>
+                <button class="nav-btn" onclick="window.navigate('saved')">Saved Profiles Ledger <span>➔</span></button>
+                <button class="nav-btn" onclick="window.navigate('rewards')">System Milestone Rewards <span>➔</span></button>
+                <button class="nav-btn" onclick="window.navigate('biometrics')">Hormonal Cycle Engine <span>➔</span></button>
+                <button class="nav-btn hidden" id="navBtnCustomizer" onclick="window.navigate('customizer')">Edit Profile Layout <span>➔</span></button>
+            </nav>
+
+            <div class="hud-zone">
+                <div class="hud-stats">
+                    <span>LEVEL <span id="lvlOut">1</span></span>
+                    <span style="color:var(--text-muted);">RANK PROG</span>
+                </div>
+                <div class="xp-bar-outer">
+                    <div class="xp-bar-inner" id="barOut"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main>
+            <div class="top-action-header-bar">
+                <div class="accent-icon-circle-btn" onclick="window.toggleThemeSystem()">🌗</div>
+                <div class="accent-icon-circle-btn" onclick="window.toggleAuthDrawer()">👤</div>
+
+                <div class="auth-drawer-panel hidden" id="authActionsDrawer">
+                    <div id="authBtnGroup" class="profile-manage-actions" style="flex-direction:column; width:100%; gap:6px;">
+                        <button class="drawer-action-btn" onclick="window.executeLiveAuth('Google')">Sync via Google</button>
                     </div>
-                </div>
-                <div class="spotify-controls-row">
-                    <button class="spot-mini-btn" id="spotLinkBtn" onclick="window.connectLiveSpotify()">Link Live Spotify</button>
-                </div>
-            </div>
-            
-            <div class="sidebar-footer">
-                <div class="auth-profile-box">
-                    <div class="user-summary" onclick="window.toggleAuthDrawer()">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" class="avatar-frame" id="userAvatar">
-                        <div class="user-meta-info">
-                            <div class="user-display-name" id="userDisplayName">Loading Account...</div>
-                            <div class="user-status-label" id="userAccountStatus">Local Storage Mode</div>
-                        </div>
-                    </div>
-                    <div class="auth-actions-drawer hidden" id="authActionsDrawer">
-                        <div class="auth-btn-row" id="authBtnGroup">
-                            <button class="provider-btn google-color" onclick="window.executeLiveAuth('Google')">Google Link</button>
-                            <button class="provider-btn discord-color" onclick="window.executeLiveAuth('Discord')">Discord Link</button>
-                        </div>
-                        <button class="provider-btn hidden" id="logoutBtn" style="background:#ff3366; margin-top:5px;" onclick="window.logoutUser()">Sign Out Account</button>
-                    </div>
-                </div>
-                <button class="toggle-btn" onclick="window.toggleThemeSystem()">Switch Visual Theme</button>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <div class="hud-card">
-                <div class="hud-level">LVL <span><span id="lvlOut">1</span></span></div>
-                <div class="hud-track"><div class="hud-bar" id="barOut"></div></div>
-                <div id="musicXpBadge" class="music-xp-badge hidden">🎧 Spotify Passive XP Active</div>
-            </div>
-
-            <div id="panel-create" class="panel active">
-                <div class="custom-creator-box">
-                    <h3>Add Custom Matrix Task</h3>
-                    <div class="custom-input-row">
-                        <input type="text" id="customTaskName" class="luxury-input" placeholder="What is your custom objective task?">
-                        <input type="number" id="customTaskXp" class="luxury-input" style="max-width:140px;" placeholder="XP (Max 30)" max="30" min="1">
-                        <button class="luxury-btn" style="padding:0 25px;" onclick="window.addNewCustomTaskToPool()">Create Task</button>
-                    </div>
-                </div>
-
-                <h2>Custom Day Matrix</h2>
-                <div id="categorizedMatrixContainer"></div>
-                <h3>Current Profile Staging</h3>
-                <div id="stagedReview" class="ledger-box"></div>
-                <div class="console-box">
-                    <input type="text" id="registryTitle" class="luxury-input" placeholder="Name today's routine...">
-                    <button class="luxury-btn" onclick="window.commitRoutineString()">Save Routine</button>
+                    <button class="drawer-action-btn hidden" id="logoutBtn" style="border-color:#ff4444; color:#ff4444;" onclick="window.logoutUser()">Disconnect Sync</button>
                 </div>
             </div>
 
-            <div id="panel-saved" class="panel">
-                <h2>Your Saved Routines</h2>
-                <div id="savedContainer"></div>
-            </div>
-
-            <div id="panel-rewards" class="panel">
-                <h2>Level Up Rewards (Granular Scale 1-100+)</h2>
-                <div class="rewards-container-scroll">
-                    <div class="rewards-matrix-grid" id="rewardsMatrixGrid"></div>
-                </div>
-            </div>
-
-            <div id="panel-cycle" class="panel">
-                <h2>Automated Biological Predictor</h2>
-                <div class="console-box">
-                    <input type="date" id="cycleAnchor" class="luxury-input">
-                    <button class="luxury-btn" onclick="window.processCycleMetrics()">Log Entry</button>
-                </div>
-                <div class="period-panel-grid" id="cycleOutputDashboard"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="taskSelectorModal" onclick="window.closeMatrixAppendModal()">
-        <div class="modal-surface" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Select Task Template Element</h3>
-                <button class="row-action-btn" onclick="window.closeMatrixAppendModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="modalTemplateScroller"></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="congratulationsRewardModal">
-        <div class="modal-surface congratulation-card-surface" onclick="event.stopPropagation()">
-            <div class="congratulations-glowing-header">
-                <div class="congratulations-sparkle">✨</div>
-                <h2>CONGRATULATIONS!</h2>
-                <p>You have unlocked an elite matrix tier milestone!</p>
-            </div>
-            <div class="modal-body text-center">
-                <div class="milestone-announcement-text">Unlocked Tier Level: <span id="rewardMilestoneLevelText">0</span></div>
-                <p class="instructional-sub">Select your desired premium item upgrade variation path below:</p>
+            <div class="panel active" id="panel-create">
+                <h1>Matrix Task Engine</h1>
                 
-                <div class="reward-selection-container-grid">
-                    <div class="reward-selection-option-card" onclick="window.selectRewardPathOption('A')">
-                        <div class="option-icon">💎</div>
-                        <div class="option-title">Reward Variant Path A</div>
-                        <p class="option-desc">Unlocks advanced visual layouts and premium digital cosmetic profile themes.</p>
-                        <button class="luxury-btn option-action-pill">Choose Path A</button>
+                <div class="spotify-card-stream">
+                    <div class="spot-info-group">
+                        <div class="spot-pulse-icon" id="spotIcon">♫</div>
+                        <div>
+                            <div style="font-weight:bold; font-size:0.95rem; display:flex; align-items:center;">
+                                <span id="spotTrack">Not Syncing</span>
+                                <span class="spot-pill-badge hidden" id="musicXpBadge">+0.2 XP/Interval Active</span>
+                            </div>
+                            <div id="spotStatus" style="font-size:0.8rem; color:var(--text-muted);">Offline</div>
+                        </div>
                     </div>
-                    <div class="reward-selection-option-card" onclick="window.selectRewardPathOption('B')">
-                        <div class="option-icon">🔥</div>
-                        <div class="option-title">Reward Variant Path B</div>
-                        <p class="option-desc">Unlocks custom notification sound banks and exclusive profile title modifiers.</p>
-                        <button class="luxury-btn option-action-pill" style="background:#ff85a2;">Choose Path B</button>
+                    <button class="manage-icon-btn" id="spotLinkBtn" onclick="window.connectLiveSpotify()" style="border-color:#1ed760; color:#1ed760;">Link Live Spotify</button>
+                </div>
+
+                <div class="staging-grid">
+                    <div class="staging-box" style="overflow-y:auto; max-height:650px; padding-right:10px;">
+                        <h3 style="margin-top:0; color:var(--cherry-glow);">1. Configure Task Iterations</h3>
+                        <div id="categorizedMatrixContainer"></div>
+                    </div>
+
+                    <div class="staging-box">
+                        <h3 style="margin-top:0; color:var(--cherry-glow);">2. Verification Queue</h3>
+                        <div class="ledger-box" id="stagedReview" style="flex:1; margin-bottom:15px;"></div>
+                        
+                        <input type="text" id="registryTitle" class="input-element" placeholder="Provide Matrix Routine Name...">
+                        <button class="action-submit-btn" onclick="window.commitRoutineString()">Commit Layout Setup</button>
+                        
+                        <hr style="border:none; border-top:1px solid var(--border-color); margin:20px 0;">
+                        <h3 style="margin-top:0; color:var(--cherry-glow); font-size:0.95rem;">Create Custom Routine Task</h3>
+                        <input type="text" id="customTaskName" class="input-element" placeholder="Task Label Name..." style="padding:8px; margin-bottom:8px; font-size:0.85rem;">
+                        <input type="number" id="customTaskXp" class="input-element" placeholder="Value Reward Points (Max 30 XP)..." style="padding:8px; margin-bottom:12px; font-size:0.85rem;">
+                        <button class="manage-icon-btn" onclick="window.addNewCustomTaskToPool()" style="width:100%; padding:10px;">Inject Into Task Engine</button>
                     </div>
                 </div>
+            </div>
+
+            <div class="panel" id="panel-saved">
+                <h1>Active Tracking Timelines</h1>
+                <div id="savedContainer" style="display:flex; flex-direction:column; gap:15px; margin-top:15px;"></div>
+            </div>
+
+            <div class="panel" id="panel-rewards">
+                <h1>Tier Progression Matrix</h1>
+                <div class="rewards-wrapper-grid" id="rewardsMatrixGrid"></div>
+            </div>
+
+            <div class="panel" id="panel-biometrics">
+                <h1>Hormonal Cycle Architecture</h1>
+                <div style="background:var(--card-bg); border:1px solid var(--border-color); padding:20px; border-radius:12px; max-width:450px;">
+                    <label style="display:block; margin-bottom:8px; font-weight:bold; font-size:0.9rem;">Set Anchor Initiation Start Date:</label>
+                    <input type="date" id="cycleAnchor" class="input-element" style="margin-bottom:15px;">
+                    <button class="action-submit-btn" onclick="window.processCycleMetrics()">Recalculate Cycle Dashboard</button>
+                </div>
+                <div class="period-card-dashboard-grid" id="cycleOutputDashboard"></div>
+            </div>
+
+            <div class="panel" id="panel-customizer">
+                <div class="custom-profile-editor-card">
+                    <h2 style="margin-top:0; color: var(--cherry-glow);">Configure Avatar & Identity Card</h2>
+                    
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <img id="editProfAvatarPreview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150" alt="Avatar Preview">
+                    </div>
+
+                    <form onsubmit="window.saveCustomUserProfileData(event)">
+                        <label style="display:block; margin: 12px 0 4px; font-weight:bold; font-size:0.85rem;">Custom Display Name</label>
+                        <input type="text" id="editProfName">
+
+                        <label style="display:block; margin: 12px 0 4px; font-weight:bold; font-size:0.85rem;">Username Handle</label>
+                        <input type="text" id="editProfUsername" placeholder="e.g. matrix_king">
+
+                        <label style="display:block; margin: 12px 0 4px; font-weight:bold; font-size:0.85rem;">User Age</label>
+                        <input type="number" id="editProfAge">
+
+                        <label style="display:block; margin: 12px 0 4px; font-weight:bold; font-size:0.85rem;">Target Milestone Date</label>
+                        <input type="date" id="editProfDate">
+
+                        <label style="display:block; margin: 12px 0 4px; font-weight:bold; font-size:0.85rem;">Current Weight Value</label>
+                        <input type="text" id="editProfWeight" placeholder="e.g. 70 kg">
+
+                        <label style="display:block; margin: 12px 0 4px; font-weight:bold; font-size:0.85rem;">Image Avatar URL Source</label>
+                        <input type="url" id="editProfAvatarUrl" placeholder="https://images.unsplash.com/...">
+
+                        <button type="submit" class="action-submit-btn" style="margin-top:25px;">Save Identity Card Metadata</button>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div class="drawer-overlay" id="taskSelectorModal">
+        <div class="modal-card-box">
+            <h3 style="margin-top:0; color:var(--cherry-glow);">Select Element to Append</h3>
+            <div class="modal-scroll-menu" id="modalTemplateScroller"></div>
+            <button class="manage-icon-btn" style="width:100%; padding:10px;" onclick="window.closeMatrixAppendModal()">Cancel Action</button>
+        </div>
+    </div>
+
+    <div class="drawer-overlay" id="congratulationsRewardModal">
+        <div class="modal-card-box" style="border-color:#10b981; background:linear-gradient(180deg, var(--card-bg), rgba(16,185,129,0.02));">
+            <div style="font-size:3rem; margin-bottom:10px;">🏆</div>
+            <h2 style="margin-top:0; color:#10b981;">Milestone Tier Unlocked!</h2>
+            <p style="font-size:0.95rem; color:var(--text-muted); margin-bottom:20px;">Your level vector achieved clearance parameters for <b style="color:#fff;">Level <span id="rewardMilestoneLevelText">0</span></b>.</p>
+            
+            <div style="font-weight:bold; font-size:0.85rem; text-align:left; margin-bottom:8px; text-transform:uppercase; color:var(--text-muted);">Choose Selection Track Option:</div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                <button class="action-submit-btn" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:#10b981;" onclick="window.selectRewardPathOption('A')">Redeem Path Architecture A</button>
+                <button class="action-submit-btn" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); color:#10b981;" onclick="window.selectRewardPathOption('B')">Redeem Path Architecture B</button>
             </div>
         </div>
     </div>
