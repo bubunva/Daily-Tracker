@@ -22,7 +22,8 @@ const discordProvider = new OAuthProvider('discord.com');
 // CORE LOCAL MEMORY MANAGEMENT LAYER
 let appData = JSON.parse(localStorage.getItem('matrixDynamicDataStorageMasterV8')) || {
     xp: 0, level: 1, savedProfiles: [], checksHistory: [], activeTheme: 'dark',
-    claimedRewards: [], customTasks: []
+    claimedRewards: [], customTasks: [],
+    userProfile: { name: "", username: "", age: "", date: "", weight: "", avatar: "" }
 };
 
 let internalStagedItems = [];
@@ -142,7 +143,6 @@ for (let i = 0; i < 40; i++) particles.push(new LiquidSpark());
 function runParticleEngine() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(runParticleEngine); }
 runParticleEngine();
 
-// --- ULTRA-SMOOTH FIX FOR CINEMATIC INTRO ---
 window.triggerNetflixZoom = function() {
     const intro = document.getElementById('intro-screen');
     intro.classList.add('zoom-trigger');
@@ -152,11 +152,17 @@ window.triggerNetflixZoom = function() {
     }, 800);
 };
 
-// --- REDIRECT AUTHENTICATION INBOUND CAPTURE RESOLVER ---
+// HANDSHAKE RE-ENTRY HANDLER
 getRedirectResult(auth)
     .then((result) => {
         if (result && result.user) {
-            console.log("Inbound network handshake complete:", result.user);
+            if (!appData.userProfile.name) {
+                appData.userProfile.name = result.user.displayName || "Matrix User";
+                appData.userProfile.avatar = result.user.photoURL || "";
+                saveStateToLocal();
+            }
+            alert(`Welcome back, ${appData.userProfile.name || 'User'}! Sync active.`);
+            updateUiWithProfileData();
         }
     })
     .catch((error) => {
@@ -166,21 +172,65 @@ getRedirectResult(auth)
 onAuthStateChanged(auth, (user) => {
     const btnGroup = document.getElementById('authBtnGroup');
     const logoutBtn = document.getElementById('logoutBtn');
+    const customizerNavBtn = document.getElementById('navBtnCustomizer');
     
     if (user) {
-        document.getElementById('userDisplayName').innerText = user.displayName || "Matrix User";
-        document.getElementById('userAccountStatus').innerText = "Verified Cloud Sync";
-        document.getElementById('userAvatar').src = user.photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150";
         btnGroup.classList.add('hidden');
         logoutBtn.classList.remove('hidden');
+        if (customizerNavBtn) customizerNavBtn.classList.remove('hidden');
+        updateUiWithProfileData(user);
     } else {
         document.getElementById('userDisplayName').innerText = "Guest Account";
         document.getElementById('userAccountStatus').innerText = "Local Storage Mode";
         document.getElementById('userAvatar').src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
         btnGroup.classList.remove('hidden');
         logoutBtn.classList.add('hidden');
+        if (customizerNavBtn) customizerNavBtn.classList.add('hidden');
     }
 });
+
+function updateUiWithProfileData(firebaseUser = null) {
+    const savedProf = appData.userProfile || {};
+    const fallbackName = firebaseUser ? firebaseUser.displayName : "Matrix User";
+    const fallbackAvatar = firebaseUser ? firebaseUser.photoURL : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150";
+
+    document.getElementById('userDisplayName').innerText = savedProf.name || fallbackName;
+    document.getElementById('userAccountStatus').innerText = savedProf.username ? `@${savedProf.username} • Verified Cloud Sync` : "Verified Cloud Sync";
+    document.getElementById('userAvatar').src = savedProf.avatar || fallbackAvatar;
+
+    if (document.getElementById('editProfName')) {
+        document.getElementById('editProfName').value = savedProf.name || "";
+        document.getElementById('editProfUsername').value = savedProf.username || "";
+        document.getElementById('editProfAge').value = savedProf.age || "";
+        document.getElementById('editProfDate').value = savedProf.date || "";
+        document.getElementById('editProfWeight').value = savedProf.weight || "";
+        document.getElementById('editProfAvatarPreview').src = savedProf.avatar || fallbackAvatar;
+    }
+}
+
+window.saveCustomUserProfileData = function(e) {
+    if (e) e.preventDefault();
+    
+    const nameVal = document.getElementById('editProfName').value.trim();
+    const userVal = document.getElementById('editProfUsername').value.trim();
+    const ageVal = document.getElementById('editProfAge').value.trim();
+    const dateVal = document.getElementById('editProfDate').value.trim();
+    const weightVal = document.getElementById('editProfWeight').value.trim();
+    const avatarUrlVal = document.getElementById('editProfAvatarUrl').value.trim();
+
+    appData.userProfile = {
+        name: nameVal || (auth.currentUser ? auth.currentUser.displayName : "Matrix User"),
+        username: userVal,
+        age: ageVal,
+        date: dateVal,
+        weight: weightVal,
+        avatar: avatarUrlVal || (auth.currentUser ? auth.currentUser.photoURL : "")
+    };
+
+    saveStateToLocal();
+    updateUiWithProfileData(auth.currentUser);
+    alert("Profile Configuration Card Updated Successfully!");
+};
 
 window.executeLiveAuth = function(providerType) {
     const provider = providerType === 'Google' ? googleProvider : discordProvider;
@@ -190,7 +240,6 @@ window.executeLiveAuth = function(providerType) {
 window.logoutUser = function() { signOut(auth); };
 window.toggleAuthDrawer = function() { document.getElementById('authActionsDrawer').classList.toggle('hidden'); };
 
-// --- LIVE SPOTIFY API INTEGRATION HANDSHAKE LAYER ---
 window.connectLiveSpotify = function() {
     if(isSpotifyLinked) {
         clearInterval(liveSpotifyCheckInterval);
@@ -220,7 +269,6 @@ window.connectLiveSpotify = function() {
     }, 15000);
 };
 
-// --- CUSTOM CREATOR GENERATOR ENGINE (WITH 30 XP GUARDFRAIL CAP) ---
 window.addNewCustomTaskToPool = function() {
     const nameInput = document.getElementById('customTaskName');
     const xpInput = document.getElementById('customTaskXp');
@@ -245,7 +293,6 @@ window.addNewCustomTaskToPool = function() {
     buildCategorizedMatrix();
 };
 
-// --- CORE SYSTEM ENGINE DYNAMICS ---
 window.toggleThemeSystem = function() {
     appData.activeTheme = appData.activeTheme === 'dark' ? 'light' : 'dark';
     saveStateToLocal();
@@ -255,10 +302,18 @@ window.toggleThemeSystem = function() {
 window.navigate = function(panelId) {
     document.querySelectorAll('.nav-group .nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    if(event) event.target.classList.add('active');
+    
+    if(event && event.target) {
+        event.target.classList.add('active');
+    } else {
+        const fallbackBtn = document.querySelector(`[onclick="window.navigate('${panelId}')"]`);
+        if(fallbackBtn) fallbackBtn.classList.add('active');
+    }
+    
     document.getElementById(`panel-${panelId}`).classList.add('active');
     if(panelId === 'saved') rebuildSavedView();
     if(panelId === 'rewards') rebuildRewardsChart();
+    if(panelId === 'customizer') updateUiWithProfileData(auth.currentUser);
 };
 
 function alterXpEngine(amount, isPositive) {
@@ -281,10 +336,10 @@ function syncHud() {
 
 function buildCategorizedMatrix() {
     const targetRoot = document.getElementById('categorizedMatrixContainer');
+    if(!targetRoot) return;
     targetRoot.innerHTML = '';
     
     categorizedTasksPool.custom = appData.customTasks || [];
-    
     const sectionLabels = { morning: 'Morning Target Matrix', campusLife: 'Campus Academic Matrices', afternoonEvening: 'Tuition & Afternoon Frameworks', outdoorPlay: 'Outdoor Play & Leisure Elements', focusConnection: 'Focus Connection Matrix', night: 'Night Cycle Routines', others: 'General Supplementary Elements', custom: 'Your Created Custom Matrix Tasks' };
 
     Object.keys(categorizedTasksPool).forEach(categoryKey => {
@@ -327,7 +382,8 @@ window.modifyTaskDirectly = function(taskId, categoryKey, step) {
 };
 
 function refreshStagedReviewList() {
-    const target = document.getElementById('stagedReview'); target.innerHTML = '';
+    const target = document.getElementById('stagedReview'); if(!target) return;
+    target.innerHTML = '';
     if (internalStagedItems.length === 0) { target.innerHTML = '<p style="padding:20px; color:var(--text-muted); margin:0;">Staging space clear</p>'; return; }
     internalStagedItems.forEach(item => {
         const div = document.createElement('div'); div.className = 'ledger-row'; div.innerHTML = `<span>${item.name}</span>`; target.appendChild(div);
@@ -345,7 +401,7 @@ window.commitRoutineString = function() {
 };
 
 function rebuildSavedView() {
-    const container = document.getElementById('savedContainer');
+    const container = document.getElementById('savedContainer'); if(!container) return;
     container.innerHTML = appData.savedProfiles.length === 0 ? '<p style="color:var(--text-muted);">No profiles created.</p>' : '';
 
     appData.savedProfiles.forEach(profile => {
@@ -408,7 +464,7 @@ function rebuildSavedView() {
 window.openMatrixAppendModal = function(e, profileId) {
     e.stopPropagation();
     activeTargetProfileIdForAppend = profileId;
-    const scroller = document.getElementById('modalTemplateScroller');
+    const scroller = document.getElementById('modalTemplateScroller'); if(!scroller) return;
     scroller.innerHTML = '';
 
     Object.keys(categorizedTasksPool).forEach(key => {
@@ -456,17 +512,12 @@ window.deleteWholeProfile = function(e, profileId) {
 };
 
 function rebuildRewardsChart() {
-    const grid = document.getElementById('rewardsMatrixGrid');
+    const grid = document.getElementById('rewardsMatrixGrid'); if(!grid) return;
     grid.innerHTML = '';
     
     for(let levelIndex = 1; levelIndex <= 247; levelIndex++) {
         let shouldRenderThisLevelCard = false;
-        
-        if (levelIndex <= 100) {
-            shouldRenderThisLevelCard = true;
-        } else if (levelIndex > 100 && levelIndex % 5 === 0) {
-            shouldRenderThisLevelCard = true;
-        }
+        if (levelIndex <= 100 || (levelIndex > 100 && levelIndex % 5 === 0)) shouldRenderThisLevelCard = true;
 
         if(shouldRenderThisLevelCard) {
             const isUnlocked = appData.level >= levelIndex;
@@ -498,7 +549,6 @@ window.selectRewardPathOption = function(variantChoice) {
     if (!currentActiveRedeemLevelTarget) return;
     appData.claimedRewards.push(currentActiveRedeemLevelTarget);
     saveStateToLocal();
-    
     document.getElementById('congratulationsRewardModal').classList.remove('open');
     currentActiveRedeemLevelTarget = null;
     rebuildRewardsChart();
@@ -512,7 +562,8 @@ window.processCycleMetrics = function() {
 function parseCalculatedCycle(initStr) {
     const activeDay = Math.floor((new Date() - new Date(initStr)) / (1000 * 60 * 60 * 24)) % 28 + 1;
     const phases = [ { title: 'Menstrual Phase', start: 1, end: 7, desc: 'Days 1-7: System renewal window active.' }, { title: 'Follicular Phase', start: 8, end: 13, desc: 'Days 8-13: Natural estrogen levels ascending safely.' }, { title: 'Ovulatory Phase', start: 14, end: 15, desc: 'Days 14-15: System structural energy cycle peak.' }, { title: 'Luteal Phase', start: 16, end: 28, desc: 'Days 16-28: Progesterone dominant transition.' } ];
-    const target = document.getElementById('cycleOutputDashboard'); target.innerHTML = '';
+    const target = document.getElementById('cycleOutputDashboard'); if(!target) return;
+    target.innerHTML = '';
     phases.forEach(p => {
         const active = activeDay >= p.start && activeDay <= p.end;
         const block = document.createElement('div'); block.className = `period-card ${active ? 'current' : ''}`;
