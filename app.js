@@ -1,8 +1,6 @@
-// 1. IMPORT LIVE FIREBASE PACKAGES DIRECTLY FROM SECURITY HOST
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut, GoogleAuthProvider, OAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// YOUR SYSTEM VERIFIED FIREBASE CONFIGURATION OBJECT BLOCK
 const firebaseConfig = {
   apiKey: "AIzaSyDA9_KdWAd_QwF3c2xoRqTwHFP96LzMjMw",
   authDomain: "routine-tracker-5ab4c.firebaseapp.com",
@@ -13,13 +11,11 @@ const firebaseConfig = {
   measurementId: "G-Z8TQ7SE0JN"
 };
 
-// INITIALIZE BACKEND INSTANCES
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
-const discordProvider = new OAuthProvider('discord.com');
 
-// CORE LOCAL MEMORY MANAGEMENT LAYER
+let isRegisterMode = false;
+
 let appData = JSON.parse(localStorage.getItem('matrixDynamicDataStorageMasterV8')) || {
     xp: 0, level: 1, savedProfiles: [], checksHistory: [], activeTheme: 'dark',
     claimedRewards: [], customTasks: [],
@@ -32,7 +28,14 @@ let currentActiveRedeemLevelTarget = null;
 let liveSpotifyCheckInterval = null;
 let isSpotifyLinked = false;
 
-// ALL 70+ SYSTEM INTEGRATED ASSIGNED CORE ROUTINES MATRIX DATA POOL
+// SYSTEM EARNABLE UNIQUE CUSTOM SYSTEM ACHIEVEMENTS DEFINITIONS MATRIX POOL
+const systemicAchievementsPool = [
+    { id: 'ach_welcome', title: 'System Initialization', desc: 'Successfully build or link a database account profile container.', icon: '🛡️', requirement: (data) => true },
+    { id: 'ach_level_5', title: 'Power Ascending', desc: 'Cross beyond level metric milestone threshold level 5.', icon: '🌟', requirement: (data) => data.level >= 5 },
+    { id: 'ach_level_20', title: 'Matrix Overlord', desc: 'Cross beyond intense tracker operational milestone status level 20.', icon: '👑', requirement: (data) => data.level >= 20 },
+    { id: 'ach_profiles_3', title: 'Multi-Timeline Architect', desc: 'Commit and preserve 3 or more distinct custom tracking matrices structures.', icon: '📚', requirement: (data) => data.savedProfiles.length >= 3 }
+];
+
 const categorizedTasksPool = {
     morning: [
         { id: 'm1', name: 'Waking up gently at a peaceful hour', base: 6, order: 1 },
@@ -84,13 +87,9 @@ const categorizedTasksPool = {
     ],
     focusConnection: [
         { id: 'fc1', name: 'Focus connection segment block one', base: 15, order: 6 },
-        { id: 'fc2', name: 'Focus connection segment block two', base: 20, order: 6 },
-        { id: 'fc3', name: 'Focus connection segment block three', base: 25, order: 6 },
+        { id: 'fc2', name: 'Focus connection segment block three', base: 25, order: 6 },
         { id: 'fc4', name: 'Focus connection segment block four', base: 30, order: 6 },
-        { id: 'fc5', name: 'Focus connection segment block five', base: 15, order: 6 },
-        { id: 'fc6', name: 'Focus connection segment block six', base: 18, order: 6 },
         { id: 'fc7', name: 'Focus connection segment block seven', base: 20, order: 6 },
-        { id: 'fc8', name: 'Focus connection segment block eight', base: 22, order: 6 },
         { id: 'fc9', name: 'Focus connection segment block nine', base: 25, order: 6 },
         { id: 'fc10', name: 'Focus connection segment block ten', base: 28, order: 6 }
     ],
@@ -125,7 +124,7 @@ function saveStateToLocal() {
     localStorage.setItem('matrixDynamicDataStorageMasterV8', JSON.stringify(appData));
 }
 
-// --- AMBIENT BACKGROUND PARTICLES LOGIC ENGINE ---
+// AMBIENT BACKGROUND PARTICLES LOGIC ENGINE
 const canvas = document.getElementById('ambient-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -135,71 +134,90 @@ resizeCanvas();
 
 class LiquidSpark {
     constructor() { this.reset(); this.y = Math.random() * canvas.height; }
-    reset() { this.x = Math.random() * canvas.width; this.y = canvas.height + 20; this.size = Math.random() * 3 + 1.5; this.speedY = Math.random() * 0.8 + 0.3; this.alpha = Math.random() * 0.4 + 0.1; }
+    reset() { this.x = Math.random() * canvas.width; this.y = canvas.height + 20; this.size = Math.random() * 2.5 + 1; this.speedY = Math.random() * 0.6 + 0.2; this.alpha = Math.random() * 0.3 + 0.1; }
     update() { this.y -= this.speedY; if (this.y < -20) this.reset(); }
     draw() { ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = '#ff85a2'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
 }
-for (let i = 0; i < 40; i++) particles.push(new LiquidSpark());
+for (let i = 0; i < 30; i++) particles.push(new LiquidSpark());
 function runParticleEngine() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(runParticleEngine); }
 runParticleEngine();
 
 window.triggerNetflixZoom = function() {
     const intro = document.getElementById('intro-screen');
-    intro.classList.add('zoom-trigger');
-    setTimeout(() => {
-        intro.classList.add('hidden');
-        document.getElementById('app-container').classList.add('visible');
-    }, 800);
+    intro.classList.add('hidden');
+    document.getElementById('app-container').classList.add('visible');
 };
 
-// HANDSHAKE RE-ENTRY HANDLER
-getRedirectResult(auth)
-    .then((result) => {
-        if (result && result.user) {
-            if (!appData.userProfile.name) {
-                appData.userProfile.name = result.user.displayName || "Matrix User";
-                appData.userProfile.avatar = result.user.photoURL || "";
+// DIRECT CUSTOM AUTH ACTION HANDLERS
+window.toggleAuthMode = function() {
+    isRegisterMode = !isRegisterMode;
+    document.getElementById('authFormTitle').innerText = isRegisterMode ? "Create Account" : "Account Sign In";
+    document.getElementById('authSubmitBtn').innerText = isRegisterMode ? "Sign Up" : "Login";
+    document.getElementById('authToggleText').innerText = isRegisterMode ? "Already registered? Login" : "Need an account? Sign Up";
+    document.getElementById('registerExtraFields').classList.toggle('hidden', !isRegisterMode);
+};
+
+window.processEmailAuth = function() {
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value.trim();
+
+    if(!email || !password) { alert("Please complete form parameters."); return; }
+
+    if(isRegisterMode) {
+        const username = document.getElementById('authUsername').value.trim();
+        const avatar = document.getElementById('authAvatarUrl').value.trim();
+        
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((credential) => {
+                appData.userProfile = { name: "Navanshi", username: username || "Navanshi_User", age: "", date: "", weight: "", avatar: avatar || "" };
                 saveStateToLocal();
-            }
-            alert(`Welcome back, ${appData.userProfile.name || 'User'}! Sync active.`);
-            updateUiWithProfileData();
-        }
-    })
-    .catch((error) => {
-        console.error("Auth redirect handshake failure:", error.message);
-    });
+                alert("Database Registration Successful!");
+                window.toggleAuthDrawer();
+            }).catch(err => alert(err.message));
+    } else {
+        signInWithEmailAndPassword(auth, email, password)
+            .then(() => {
+                alert("Login successful!");
+                window.toggleAuthDrawer();
+            }).catch(err => alert(err.message));
+    }
+};
 
 onAuthStateChanged(auth, (user) => {
-    const btnGroup = document.getElementById('authBtnGroup');
+    const formFields = document.getElementById('authFormFields');
     const logoutBtn = document.getElementById('logoutBtn');
     const customizerNavBtn = document.getElementById('navBtnCustomizer');
+    const mobileCustomizerBtn = document.getElementById('mobileNavCustomizerBtn');
     
     if (user) {
-        btnGroup.classList.add('hidden');
-        logoutBtn.classList.remove('hidden');
-        if (customizerNavBtn) customizerNavBtn.classList.remove('hidden');
+        if(formFields) formFields.classList.add('hidden');
+        if(logoutBtn) logoutBtn.classList.remove('hidden');
+        if(customizerNavBtn) customizerNavBtn.classList.remove('hidden');
+        if(mobileCustomizerBtn) mobileCustomizerBtn.classList.remove('hidden');
         updateUiWithProfileData(user);
     } else {
-        document.getElementById('userDisplayName').innerText = "Guest Account";
-        document.getElementById('userAccountStatus').innerText = "Local Storage Mode";
+        document.getElementById('userDisplayName').innerText = "Guest Vault";
+        document.getElementById('userAccountStatus').innerText = "Local Data Cache Only";
         document.getElementById('userAvatar').src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
-        btnGroup.classList.remove('hidden');
-        logoutBtn.classList.add('hidden');
-        if (customizerNavBtn) customizerNavBtn.classList.add('hidden');
+        if(formFields) formFields.classList.remove('hidden');
+        if(logoutBtn) logoutBtn.classList.add('hidden');
+        if(customizerNavBtn) customizerNavBtn.classList.add('hidden');
+        if(mobileCustomizerBtn) mobileCustomizerBtn.classList.add('hidden');
     }
+    rebuildAchievementsChart();
 });
 
-function updateUiWithProfileData(firebaseUser = null) {
+function updateUiWithProfileData(userInstance = null) {
     const savedProf = appData.userProfile || {};
-    const fallbackName = firebaseUser ? firebaseUser.displayName : "Matrix User";
-    const fallbackAvatar = firebaseUser ? firebaseUser.photoURL : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150";
+    const fallbackName = "Navanshi";
+    const fallbackAvatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
 
     document.getElementById('userDisplayName').innerText = savedProf.name || fallbackName;
-    document.getElementById('userAccountStatus').innerText = savedProf.username ? `@${savedProf.username} • Verified Cloud Sync` : "Verified Cloud Sync";
+    document.getElementById('userAccountStatus').innerText = savedProf.username ? `@${savedProf.username} • Cloud Synced` : "Cloud Synced";
     document.getElementById('userAvatar').src = savedProf.avatar || fallbackAvatar;
 
     if (document.getElementById('editProfName')) {
-        document.getElementById('editProfName').value = savedProf.name || "";
+        document.getElementById('editProfName').value = savedProf.name || fallbackName;
         document.getElementById('editProfUsername').value = savedProf.username || "";
         document.getElementById('editProfAge').value = savedProf.age || "";
         document.getElementById('editProfDate').value = savedProf.date || "";
@@ -210,31 +228,17 @@ function updateUiWithProfileData(firebaseUser = null) {
 
 window.saveCustomUserProfileData = function(e) {
     if (e) e.preventDefault();
-    
-    const nameVal = document.getElementById('editProfName').value.trim();
-    const userVal = document.getElementById('editProfUsername').value.trim();
-    const ageVal = document.getElementById('editProfAge').value.trim();
-    const dateVal = document.getElementById('editProfDate').value.trim();
-    const weightVal = document.getElementById('editProfWeight').value.trim();
-    const avatarUrlVal = document.getElementById('editProfAvatarUrl').value.trim();
-
     appData.userProfile = {
-        name: nameVal || (auth.currentUser ? auth.currentUser.displayName : "Matrix User"),
-        username: userVal,
-        age: ageVal,
-        date: dateVal,
-        weight: weightVal,
-        avatar: avatarUrlVal || (auth.currentUser ? auth.currentUser.photoURL : "")
+        name: document.getElementById('editProfName').value.trim() || "Navanshi",
+        username: document.getElementById('editProfUsername').value.trim(),
+        age: document.getElementById('editProfAge').value.trim(),
+        date: document.getElementById('editProfDate').value.trim(),
+        weight: document.getElementById('editProfWeight').value.trim(),
+        avatar: document.getElementById('editProfAvatarUrl').value.trim()
     };
-
     saveStateToLocal();
     updateUiWithProfileData(auth.currentUser);
-    alert("Profile Configuration Card Updated Successfully!");
-};
-
-window.executeLiveAuth = function(providerType) {
-    const provider = providerType === 'Google' ? googleProvider : discordProvider;
-    signInWithRedirect(auth, provider).catch(err => alert("Auth Request Unsuccessful: " + err.message));
+    alert("Profile Updated Successfully!");
 };
 
 window.logoutUser = function() { signOut(auth); };
@@ -246,50 +250,35 @@ window.connectLiveSpotify = function() {
         isSpotifyLinked = false;
         document.getElementById('spotTrack').innerText = "Not Syncing";
         document.getElementById('spotStatus').innerText = "Offline";
-        document.getElementById('spotLinkBtn').innerText = "Link Live Spotify";
         document.getElementById('spotIcon').classList.remove('playing-wave');
         document.getElementById('musicXpBadge').classList.add('hidden');
         return;
     }
-    
     isSpotifyLinked = true;
     document.getElementById('spotTrack').innerText = "Authenticating...";
     document.getElementById('spotStatus').innerText = "Searching App Stream...";
-    document.getElementById('spotLinkBtn').innerText = "Disconnect Spotify";
     
     setTimeout(() => {
-        document.getElementById('spotTrack').innerText = "Live: Blinding Lights";
+        document.getElementById('spotTrack').innerText = "Live: Calm Focus Stream";
         document.getElementById('spotStatus').innerText = "Synchronized";
         document.getElementById('spotIcon').classList.add('playing-wave');
         document.getElementById('musicXpBadge').classList.remove('hidden');
-        
-        liveSpotifyCheckInterval = setInterval(() => {
-            alterXpEngine(0.2, true);
-        }, 12000);
-    }, 15000);
+        liveSpotifyCheckInterval = setInterval(() => { alterXpEngine(0.2, true); }, 12000);
+    }, 2000);
 };
 
 window.addNewCustomTaskToPool = function() {
     const nameInput = document.getElementById('customTaskName');
     const xpInput = document.getElementById('customTaskXp');
-    
     const taskName = nameInput.value.trim();
     let taskXp = parseInt(xpInput.value);
     
-    if(!taskName || isNaN(taskXp)) { alert("Provide a valid item label and score criteria point value."); return; }
+    if(!taskName || isNaN(taskXp)) { alert("Provide a valid item label."); return; }
+    taskXp = Math.max(1, Math.min(30, taskXp));
     
-    if (taskXp > 30) taskXp = 30;
-    if (taskXp < 1) taskXp = 1;
-    
-    const customId = `cust-${Date.now()}`;
-    const targetObj = { id: customId, name: taskName, base: taskXp, order: 7 };
-    
-    appData.customTasks.push(targetObj);
+    appData.customTasks.push({ id: `cust-${Date.now()}`, name: taskName, base: taskXp, order: 7 });
     saveStateToLocal();
-    
-    nameInput.value = '';
-    xpInput.value = '';
-    
+    nameInput.value = ''; xpInput.value = '';
     buildCategorizedMatrix();
 };
 
@@ -300,19 +289,19 @@ window.toggleThemeSystem = function() {
 };
 
 window.navigate = function(panelId) {
-    document.querySelectorAll('.nav-group .nav-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.nav-btn, .mobile-nav-item').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     
-    if(event && event.target) {
-        event.target.classList.add('active');
-    } else {
-        const fallbackBtn = document.querySelector(`[onclick="window.navigate('${panelId}')"]`);
-        if(fallbackBtn) fallbackBtn.classList.add('active');
-    }
+    const desktopBtn = document.querySelector(`aside [onclick="window.navigate('${panelId}')"]`);
+    const mobileBtn = document.querySelector(`.mobile-nav-bar [onclick="window.navigate('${panelId}')"]`);
+    
+    if(desktopBtn) desktopBtn.classList.add('active');
+    if(mobileBtn) mobileBtn.classList.add('active');
     
     document.getElementById(`panel-${panelId}`).classList.add('active');
     if(panelId === 'saved') rebuildSavedView();
     if(panelId === 'rewards') rebuildRewardsChart();
+    if(panelId === 'achievements') rebuildAchievementsChart();
     if(panelId === 'customizer') updateUiWithProfileData(auth.currentUser);
 };
 
@@ -327,6 +316,7 @@ function alterXpEngine(amount, isPositive) {
     }
     saveStateToLocal();
     syncHud();
+    rebuildAchievementsChart();
 }
 
 function syncHud() {
@@ -338,9 +328,9 @@ function buildCategorizedMatrix() {
     const targetRoot = document.getElementById('categorizedMatrixContainer');
     if(!targetRoot) return;
     targetRoot.innerHTML = '';
-    
     categorizedTasksPool.custom = appData.customTasks || [];
-    const sectionLabels = { morning: 'Morning Target Matrix', campusLife: 'Campus Academic Matrices', afternoonEvening: 'Tuition & Afternoon Frameworks', outdoorPlay: 'Outdoor Play & Leisure Elements', focusConnection: 'Focus Connection Matrix', night: 'Night Cycle Routines', others: 'General Supplementary Elements', custom: 'Your Created Custom Matrix Tasks' };
+    
+    const sectionLabels = { morning: 'Morning Target Matrix', campusLife: 'Campus Academic Matrices', afternoonEvening: 'Tuition & Afternoon Frameworks', outdoorPlay: 'Outdoor Play & Leisure Elements', focusConnection: 'Focus Connection Matrix', night: 'Night Cycle Routines', others: 'Supplementary Elements', custom: 'Custom Created Tasks' };
 
     Object.keys(categorizedTasksPool).forEach(categoryKey => {
         if(categoryKey === 'custom' && categorizedTasksPool.custom.length === 0) return;
@@ -356,7 +346,7 @@ function buildCategorizedMatrix() {
             const card = document.createElement('div');
             card.className = 'matrix-card';
             card.innerHTML = `
-                <div class="matrix-card-title">${task.name} <b style="color:var(--cherry-glow); font-size:0.8rem;">(+${task.base} XP)</b></div>
+                <div class="matrix-card-title">${task.name} <b style="color:var(--cherry-glow);">(+${task.base} XP)</b></div>
                 <div class="cart-counter">
                     <button class="cart-btn" onclick="window.modifyTaskDirectly('${task.id}', '${categoryKey}', -1)">−</button>
                     <span class="cart-value" id="cartVal-${task.id}">${count}</span>
@@ -384,7 +374,7 @@ window.modifyTaskDirectly = function(taskId, categoryKey, step) {
 function refreshStagedReviewList() {
     const target = document.getElementById('stagedReview'); if(!target) return;
     target.innerHTML = '';
-    if (internalStagedItems.length === 0) { target.innerHTML = '<p style="padding:20px; color:var(--text-muted); margin:0;">Staging space clear</p>'; return; }
+    if (internalStagedItems.length === 0) { target.innerHTML = '<p style="padding:20px; color:var(--text-muted); margin:0;">Staging space empty</p>'; return; }
     internalStagedItems.forEach(item => {
         const div = document.createElement('div'); div.className = 'ledger-row'; div.innerHTML = `<span>${item.name}</span>`; target.appendChild(div);
     });
@@ -398,11 +388,12 @@ window.commitRoutineString = function() {
     appData.savedProfiles.push({ id: 'profile-' + Date.now(), title: name, payload: [...internalStagedItems] });
     saveStateToLocal();
     titleInput.value = ''; internalStagedItems = []; refreshStagedReviewList(); buildCategorizedMatrix();
+    rebuildAchievementsChart();
 };
 
 function rebuildSavedView() {
     const container = document.getElementById('savedContainer'); if(!container) return;
-    container.innerHTML = appData.savedProfiles.length === 0 ? '<p style="color:var(--text-muted);">No profiles created.</p>' : '';
+    container.innerHTML = appData.savedProfiles.length === 0 ? '<p style="color:var(--text-muted);">No layout profiles created yet.</p>' : '';
 
     appData.savedProfiles.forEach(profile => {
         const bar = document.createElement('div');
@@ -411,14 +402,14 @@ function rebuildSavedView() {
             <div class="routine-bar-header">
                 <span>${profile.title}</span>
                 <div class="profile-manage-actions">
-                    <button class="manage-icon-btn" onclick="window.openMatrixAppendModal(event, '${profile.id}')">+ Add Task</button>
-                    <button class="manage-icon-btn" style="background:rgba(255,0,0,0.1); color:#ff4444;" onclick="window.deleteWholeProfile(event, '${profile.id}')">Delete</button>
+                    <button class="manage-icon-btn" onclick="window.openMatrixAppendModal(event, '${profile.id}')">+ Add</button>
+                    <button class="manage-icon-btn" style="color:#ff4444;" onclick="window.deleteWholeProfile(event, '${profile.id}')">Delete</button>
                 </div>
             </div>
             <div class="routine-content-accordion" id="accordion-${profile.id}">
-                <div class="timeline-sub-container" id="sub-morning-${profile.id}"><div class="timeline-sub-header">Morning Slots</div><div class="ledger-box" id="ledger-morning-${profile.id}"></div></div>
-                <div class="timeline-sub-container" id="sub-midday-${profile.id}"><div class="timeline-sub-header">Daytime Matrix</div><div class="ledger-box" id="ledger-midday-${profile.id}"></div></div>
-                <div class="timeline-sub-container" id="sub-night-${profile.id}"><div class="timeline-sub-header">Night Rituals</div><div class="ledger-box" id="ledger-night-${profile.id}"></div></div>
+                <div class="timeline-sub-container"><div class="timeline-sub-header">Morning Slots</div><div class="ledger-box" id="ledger-morning-${profile.id}"></div></div>
+                <div class="timeline-sub-container"><div class="timeline-sub-header">Daytime Matrix</div><div class="ledger-box" id="ledger-midday-${profile.id}"></div></div>
+                <div class="timeline-sub-container"><div class="timeline-sub-header">Night Rituals</div><div class="ledger-box" id="ledger-night-${profile.id}"></div></div>
             </div>
         `;
 
@@ -435,8 +426,7 @@ function rebuildSavedView() {
             const row = document.createElement('div');
             row.className = `ledger-row ${isCompleted ? 'checked-row' : ''}`;
             row.innerHTML = `
-                <input type="checkbox" class="custom-check" ${isCompleted ? 'checked' : ''}>
-                <span class="label-text">${task.name}</span>
+                <div style="display:flex; align-items:center;"><input type="checkbox" class="custom-check" ${isCompleted ? 'checked' : ''}><span>${task.name}</span></div>
                 <button class="row-action-btn" onclick="window.removeSingleTaskInline(event, '${profile.id}', '${task.instanceId}', ${task.xp})">&times;</button>
             `;
 
@@ -462,15 +452,12 @@ function rebuildSavedView() {
 }
 
 window.openMatrixAppendModal = function(e, profileId) {
-    e.stopPropagation();
-    activeTargetProfileIdForAppend = profileId;
+    e.stopPropagation(); activeTargetProfileIdForAppend = profileId;
     const scroller = document.getElementById('modalTemplateScroller'); if(!scroller) return;
     scroller.innerHTML = '';
-
     Object.keys(categorizedTasksPool).forEach(key => {
         categorizedTasksPool[key].forEach(tmpl => {
-            const div = document.createElement('div');
-            div.className = 'modal-item-row'; div.innerText = tmpl.name;
+            const div = document.createElement('div'); div.className = 'modal-item-row'; div.innerText = tmpl.name;
             div.onclick = () => executeMatrixElementSelectionAppend(tmpl);
             scroller.appendChild(div);
         });
@@ -478,16 +465,12 @@ window.openMatrixAppendModal = function(e, profileId) {
     document.getElementById('taskSelectorModal').classList.add('open');
 };
 
-window.closeMatrixAppendModal = function() {
-    document.getElementById('taskSelectorModal').classList.remove('open');
-    activeTargetProfileIdForAppend = null;
-};
+window.closeMatrixAppendModal = function() { document.getElementById('taskSelectorModal').classList.remove('open'); };
 
 function executeMatrixElementSelectionAppend(templateObj) {
-    if(!activeTargetProfileIdForAppend) return;
     const profile = appData.savedProfiles.find(p => p.id === activeTargetProfileIdForAppend);
     if(profile) {
-        profile.payload.push({ id: templateObj.id, name: `${templateObj.name} (Added)`, xp: templateObj.base, order: templateObj.order, instanceId: `inst-matrix-append-${Date.now()}` });
+        profile.payload.push({ id: templateObj.id, name: `${templateObj.name} (Added)`, xp: templateObj.base, order: templateObj.order, instanceId: `inst-append-${Date.now()}` });
         saveStateToLocal(); rebuildSavedView(); window.closeMatrixAppendModal();
     }
 }
@@ -505,37 +488,36 @@ window.removeSingleTaskInline = function(e, profileId, instanceId, xp) {
 
 window.deleteWholeProfile = function(e, profileId) {
     e.stopPropagation();
-    if(confirm("Confirm removal of this profile layout?")) {
+    if(confirm("Confirm removal of profile?")) {
         appData.savedProfiles = appData.savedProfiles.filter(p => p.id !== profileId);
         saveStateToLocal(); rebuildSavedView();
+        rebuildAchievementsChart();
     }
 };
 
 function rebuildRewardsChart() {
     const grid = document.getElementById('rewardsMatrixGrid'); if(!grid) return;
     grid.innerHTML = '';
-    
-    for(let levelIndex = 1; levelIndex <= 247; levelIndex++) {
-        let shouldRenderThisLevelCard = false;
-        if (levelIndex <= 100 || (levelIndex > 100 && levelIndex % 5 === 0)) shouldRenderThisLevelCard = true;
-
-        if(shouldRenderThisLevelCard) {
-            const isUnlocked = appData.level >= levelIndex;
-            const isClaimed = appData.claimedRewards.includes(levelIndex);
-            let structuralStateClass = '';
-            if (isUnlocked && !isClaimed) structuralStateClass = 'unlocked-claimable';
-            if (isClaimed) structuralStateClass = 'claimed';
-
-            const rewardCard = document.createElement('div');
-            rewardCard.className = `reward-tier-card ${structuralStateClass}`;
-            rewardCard.innerHTML = `
-                <div class="tier-badge">LVL ${levelIndex}</div>
-                <div class="reward-options-stack"><div class="reward-mini-pill">Path A</div><div class="reward-mini-pill">Path B</div></div>
-                <button class="redeem-trigger-btn" onclick="window.openCongratulationsModal(${levelIndex})">${isClaimed ? 'Claimed ✓' : (isUnlocked ? 'Redeem Upgrade' : 'Locked Matrix')}</button>
-            `;
-            grid.appendChild(rewardCard);
-        }
+    for(let i = 1; i <= 50; i++) {
+        const isUnlocked = appData.level >= i;
+        const isClaimed = appData.claimedRewards.includes(i);
+        const card = document.createElement('div');
+        card.className = `reward-tier-card ${isUnlocked && !isClaimed ? 'unlocked-claimable' : ''}`;
+        card.innerHTML = `<div class="tier-badge">LVL ${i}</div><button class="redeem-trigger-btn" onclick="window.openCongratulationsModal(${i})">${isClaimed ? 'Claimed ✓' : 'Reward Node'}</button>`;
+        grid.appendChild(card);
     }
+}
+
+function rebuildAchievementsChart() {
+    const grid = document.getElementById('achievementsMatrixGrid'); if(!grid) return;
+    grid.innerHTML = '';
+    systemicAchievementsPool.forEach(ach => {
+        const hasUnlocked = ach.requirement(appData);
+        const card = document.createElement('div');
+        card.className = `achievement-card ${hasUnlocked ? 'unlocked' : ''}`;
+        card.innerHTML = `<div class="ach-icon">${ach.icon}</div><div style="font-weight:700; font-size:0.95rem;">${ach.title}</div><p style="margin:4px 0 0; font-size:0.75rem; color:var(--text-muted);">${ach.desc}</p>`;
+        grid.appendChild(card);
+    });
 }
 
 window.openCongratulationsModal = function(level) {
@@ -550,7 +532,6 @@ window.selectRewardPathOption = function(variantChoice) {
     appData.claimedRewards.push(currentActiveRedeemLevelTarget);
     saveStateToLocal();
     document.getElementById('congratulationsRewardModal').classList.remove('open');
-    currentActiveRedeemLevelTarget = null;
     rebuildRewardsChart();
 };
 
@@ -561,18 +542,17 @@ window.processCycleMetrics = function() {
 
 function parseCalculatedCycle(initStr) {
     const activeDay = Math.floor((new Date() - new Date(initStr)) / (1000 * 60 * 60 * 24)) % 28 + 1;
-    const phases = [ { title: 'Menstrual Phase', start: 1, end: 7, desc: 'Days 1-7: System renewal window active.' }, { title: 'Follicular Phase', start: 8, end: 13, desc: 'Days 8-13: Natural estrogen levels ascending safely.' }, { title: 'Ovulatory Phase', start: 14, end: 15, desc: 'Days 14-15: System structural energy cycle peak.' }, { title: 'Luteal Phase', start: 16, end: 28, desc: 'Days 16-28: Progesterone dominant transition.' } ];
+    const phases = [ { title: 'Menstrual Phase', start: 1, end: 7, desc: 'Days 1-7: System renewal active.' }, { title: 'Follicular Phase', start: 8, end: 13, desc: 'Days 8-13: Estrogen levels ascending.' }, { title: 'Ovulatory Phase', start: 14, end: 15, desc: 'Days 14-15: Structural energy peak.' }, { title: 'Luteal Phase', start: 16, end: 28, desc: 'Days 16-28: Progesterone transition.' } ];
     const target = document.getElementById('cycleOutputDashboard'); if(!target) return;
     target.innerHTML = '';
     phases.forEach(p => {
         const active = activeDay >= p.start && activeDay <= p.end;
         const block = document.createElement('div'); block.className = `period-card ${active ? 'current' : ''}`;
-        block.innerHTML = `<div class="period-card-title">${p.title}</div><p style="font-size:0.9rem;">${p.desc}</p>${active ? `<div style='color:var(--cherry-glow); font-weight:700;'>Day: ${activeDay}</div>`:''}`;
+        block.innerHTML = `<div class="period-card-title">${p.title}</div><p style="font-size:0.8rem; margin:4px 0;">${p.desc}</p>${active ? `<b style='color:var(--cherry-glow); font-size:0.85rem;'>Day: ${activeDay}</b>`:''}`;
         target.appendChild(block);
     });
 }
 
-// BOOTLOAD DATA SYSTEM INIT CHANNELS
 document.documentElement.setAttribute('data-theme', appData.activeTheme);
 syncHud(); buildCategorizedMatrix(); refreshStagedReviewList();
 const fallbackCycle = localStorage.getItem('luxuryCycleDateDarkThemeV6');
