@@ -1,6 +1,6 @@
 // 1. IMPORT LIVE FIREBASE PACKAGES DIRECTLY FROM SECURITY HOST
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut, GoogleAuthProvider, OAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // YOUR SYSTEM VERIFIED FIREBASE CONFIGURATION OBJECT BLOCK
 const firebaseConfig = {
@@ -31,7 +31,7 @@ let currentActiveRedeemLevelTarget = null;
 let liveSpotifyCheckInterval = null;
 let isSpotifyLinked = false;
 
-// 70+ SYSTEM INTEGRATED ASSIGNED CORE ROUTINES MATRIX DATA POOL
+// ALL 70+ SYSTEM INTEGRATED ASSIGNED CORE ROUTINES MATRIX DATA POOL
 const categorizedTasksPool = {
     morning: [
         { id: 'm1', name: 'Waking up gently at a peaceful hour', base: 6, order: 1 },
@@ -82,16 +82,16 @@ const categorizedTasksPool = {
         { id: 'op10', name: 'Taking clean captures of evening landscapes or scenery', base: 8, order: 5 }
     ],
     focusConnection: [
-        { id: 'fc1', name: 'Talking to Joel and sharing daily updates completely', base: 45, order: 6 },
-        { id: 'fc2', name: 'Initiating a long video call block with Joel to catch up', base: 50, order: 6 },
-        { id: 'fc3', name: 'Spending dedicated digital quality relaxation time with Joel', base: 55, order: 6 },
-        { id: 'fc4', name: 'Planning thoughtful items and writing cards for Joel', base: 60, order: 6 },
-        { id: 'fc5', name: 'Sending a caring check-in message block over to Joel', base: 35, order: 6 },
-        { id: 'fc6', name: 'Sharing funny highlights or snapshots of the day with Joel', base: 38, order: 6 },
-        { id: 'fc7', name: 'Syncing online activities to enjoy music tracks with Joel', base: 40, order: 6 },
-        { id: 'fc8', name: 'Discussing upcoming schedules and goals with Joel together', base: 42, order: 6 },
-        { id: 'fc9', name: 'Exchanging supportive affirmations during breaks with Joel', base: 45, order: 6 },
-        { id: 'fc10', name: 'Saying a warm meaningful goodnight before logging off with Joel', base: 48, order: 6 }
+        { id: 'fc1', name: 'Focus connection segment block one', base: 15, order: 6 },
+        { id: 'fc2', name: 'Focus connection segment block two', base: 20, order: 6 },
+        { id: 'fc3', name: 'Focus connection segment block three', base: 25, order: 6 },
+        { id: 'fc4', name: 'Focus connection segment block four', base: 30, order: 6 },
+        { id: 'fc5', name: 'Focus connection segment block five', base: 15, order: 6 },
+        { id: 'fc6', name: 'Focus connection segment block six', base: 18, order: 6 },
+        { id: 'fc7', name: 'Focus connection segment block seven', base: 20, order: 6 },
+        { id: 'fc8', name: 'Focus connection segment block eight', base: 22, order: 6 },
+        { id: 'fc9', name: 'Focus connection segment block nine', base: 25, order: 6 },
+        { id: 'fc10', name: 'Focus connection segment block ten', base: 28, order: 6 }
     ],
     night: [
         { id: 'n1', name: 'Brushing teeth thoroughly before evening rest cycles', base: 5, order: 3 },
@@ -117,7 +117,7 @@ const categorizedTasksPool = {
         { id: 'o7', name: 'Watering bedroom house plants or external balcony flowers', base: 5, order: 7 },
         { id: 'o8', name: 'Listening to an inspiring or soothing complete music album', base: 4, order: 7 }
     ],
-    custom: [] // Handled via input generator matrix dynamically
+    custom: []
 };
 
 function saveStateToLocal() {
@@ -152,7 +152,17 @@ window.triggerNetflixZoom = function() {
     }, 800);
 };
 
-// --- FIREBASE LIVE SOCIAL CONNECT SYSTEM HANDLER ---
+// --- REDIRECT AUTHENTICATION INBOUND CAPTURE RESOLVER ---
+getRedirectResult(auth)
+    .then((result) => {
+        if (result && result.user) {
+            console.log("Inbound network handshake complete:", result.user);
+        }
+    })
+    .catch((error) => {
+        console.error("Auth redirect handshake failure:", error.message);
+    });
+
 onAuthStateChanged(auth, (user) => {
     const btnGroup = document.getElementById('authBtnGroup');
     const logoutBtn = document.getElementById('logoutBtn');
@@ -174,7 +184,7 @@ onAuthStateChanged(auth, (user) => {
 
 window.executeLiveAuth = function(providerType) {
     const provider = providerType === 'Google' ? googleProvider : discordProvider;
-    signInWithPopup(auth, provider).catch(err => alert("Auth Request Unsuccessful: " + err.message));
+    signInWithRedirect(auth, provider).catch(err => alert("Auth Request Unsuccessful: " + err.message));
 };
 
 window.logoutUser = function() { signOut(auth); };
@@ -193,7 +203,6 @@ window.connectLiveSpotify = function() {
         return;
     }
     
-    // Live API Access Handshake Loop
     isSpotifyLinked = true;
     document.getElementById('spotTrack').innerText = "Authenticating...";
     document.getElementById('spotStatus').innerText = "Searching App Stream...";
@@ -221,10 +230,7 @@ window.addNewCustomTaskToPool = function() {
     
     if(!taskName || isNaN(taskXp)) { alert("Provide a valid item label and score criteria point value."); return; }
     
-    // ENFORCE STRICT MAXIMUM INTERCEPTOR GUARD LIMIT CAP AT 30 XP
-    if (taskXp > 30) {
-        taskXp = 30;
-    }
+    if (taskXp > 30) taskXp = 30;
     if (taskXp < 1) taskXp = 1;
     
     const customId = `cust-${Date.now()}`;
@@ -279,7 +285,7 @@ function buildCategorizedMatrix() {
     
     categorizedTasksPool.custom = appData.customTasks || [];
     
-    const sectionLabels = { morning: 'Morning Target Matrix', campusLife: 'Campus Academic Matrices', afternoonEvening: 'Tuition & Afternoon Frameworks', outdoorPlay: 'Outdoor Play & Leisure Elements', focusConnection: 'Digital Communications Hub', night: 'Night Cycle Routines', others: 'General Supplementary Elements', custom: 'Your Created Custom Matrix Tasks' };
+    const sectionLabels = { morning: 'Morning Target Matrix', campusLife: 'Campus Academic Matrices', afternoonEvening: 'Tuition & Afternoon Frameworks', outdoorPlay: 'Outdoor Play & Leisure Elements', focusConnection: 'Focus Connection Matrix', night: 'Night Cycle Routines', others: 'General Supplementary Elements', custom: 'Your Created Custom Matrix Tasks' };
 
     Object.keys(categorizedTasksPool).forEach(categoryKey => {
         if(categoryKey === 'custom' && categorizedTasksPool.custom.length === 0) return;
@@ -449,21 +455,16 @@ window.deleteWholeProfile = function(e, profileId) {
     }
 };
 
-// --- GRANULAR 1-TO-100+ MILESTONE LEVEL REWARD COMPONENT GENERATOR ---
 function rebuildRewardsChart() {
     const grid = document.getElementById('rewardsMatrixGrid');
     grid.innerHTML = '';
     
-    // Total level grid space scale setting
     for(let levelIndex = 1; levelIndex <= 247; levelIndex++) {
         let shouldRenderThisLevelCard = false;
         
-        // GRANULAR GENERATION: Render every consecutive integer scale layer up to Level 100
         if (levelIndex <= 100) {
             shouldRenderThisLevelCard = true;
-        } 
-        // BRACKET GENERATION: Switch safely into 5-level gap segments after level 100
-        else if (levelIndex > 100 && levelIndex % 5 === 0) {
+        } else if (levelIndex > 100 && levelIndex % 5 === 0) {
             shouldRenderThisLevelCard = true;
         }
 
