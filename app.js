@@ -23,12 +23,10 @@ let appData = JSON.parse(localStorage.getItem('matrixDynamicDataStorageMasterV8'
 };
 
 let internalStagedItems = [];
-let activeTargetProfileIdForAppend = null;
 let currentActiveRedeemLevelTarget = null;
 let liveSpotifyCheckInterval = null;
 let isSpotifyLinked = false;
 
-// SYSTEM EARNABLE UNIQUE CUSTOM SYSTEM ACHIEVEMENTS DEFINITIONS MATRIX POOL
 const systemicAchievementsPool = [
     { id: 'ach_welcome', title: 'System Initialization', desc: 'Successfully build or link a database account profile container.', icon: '🛡️', requirement: (data) => true },
     { id: 'ach_level_5', title: 'Power Ascending', desc: 'Cross beyond level metric milestone threshold level 5.', icon: '🌟', requirement: (data) => data.level >= 5 },
@@ -124,7 +122,6 @@ function saveStateToLocal() {
     localStorage.setItem('matrixDynamicDataStorageMasterV8', JSON.stringify(appData));
 }
 
-// AMBIENT BACKGROUND PARTICLES LOGIC ENGINE
 const canvas = document.getElementById('ambient-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -134,50 +131,48 @@ resizeCanvas();
 
 class LiquidSpark {
     constructor() { this.reset(); this.y = Math.random() * canvas.height; }
-    reset() { this.x = Math.random() * canvas.width; this.y = canvas.height + 20; this.size = Math.random() * 2.5 + 1; this.speedY = Math.random() * 0.6 + 0.2; this.alpha = Math.random() * 0.3 + 0.1; }
+    reset() { this.x = Math.random() * canvas.width; this.y = canvas.height + 20; this.size = Math.random() * 2 + 1; this.speedY = Math.random() * 0.3 + 0.1; this.alpha = Math.random() * 0.25 + 0.05; }
     update() { this.y -= this.speedY; if (this.y < -20) this.reset(); }
-    draw() { ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = '#ff85a2'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+    draw() { ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = '#ff6b8b'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
 }
 for (let i = 0; i < 30; i++) particles.push(new LiquidSpark());
 function runParticleEngine() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(runParticleEngine); }
 runParticleEngine();
 
 window.triggerNetflixZoom = function() {
-    const intro = document.getElementById('intro-screen');
-    intro.classList.add('hidden');
-    document.getElementById('app-container').classList.add('visible');
+    const s = document.getElementById('intro-screen');
+    s.classList.add('hidden');
+    setTimeout(() => {
+        s.style.display = 'none';
+        document.getElementById('app-container').classList.add('visible');
+    }, 600);
 };
 
-// DIRECT CUSTOM AUTH ACTION HANDLERS
 window.toggleAuthMode = function() {
     isRegisterMode = !isRegisterMode;
-    document.getElementById('authFormTitle').innerText = isRegisterMode ? "Create Account" : "Account Sign In";
-    document.getElementById('authSubmitBtn').innerText = isRegisterMode ? "Sign Up" : "Login";
-    document.getElementById('authToggleText').innerText = isRegisterMode ? "Already registered? Login" : "Need an account? Sign Up";
+    document.getElementById('authFormTitle').innerText = isRegisterMode ? "Create Cloud Identifier" : "Sync Core Registry";
+    document.getElementById('authSubmitBtn').innerText = isRegisterMode ? "Deploy Node" : "Authorize";
+    document.getElementById('authToggleText').innerText = isRegisterMode ? "Return to base authentication? Login" : "Request Cloud Node? Register";
     document.getElementById('registerExtraFields').classList.toggle('hidden', !isRegisterMode);
 };
 
 window.processEmailAuth = function() {
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value.trim();
-
-    if(!email || !password) { alert("Please complete form parameters."); return; }
+    if(!email || !password) return;
 
     if(isRegisterMode) {
         const username = document.getElementById('authUsername').value.trim();
         const avatar = document.getElementById('authAvatarUrl').value.trim();
-        
         createUserWithEmailAndPassword(auth, email, password)
-            .then((credential) => {
+            .then(() => {
                 appData.userProfile = { name: "Navanshi", username: username || "Navanshi_User", age: "", date: "", weight: "", avatar: avatar || "" };
                 saveStateToLocal();
-                alert("Database Registration Successful!");
                 window.toggleAuthDrawer();
             }).catch(err => alert(err.message));
     } else {
         signInWithEmailAndPassword(auth, email, password)
             .then(() => {
-                alert("Login successful!");
                 window.toggleAuthDrawer();
             }).catch(err => alert(err.message));
     }
@@ -196,8 +191,8 @@ onAuthStateChanged(auth, (user) => {
         if(mobileCustomizerBtn) mobileCustomizerBtn.classList.remove('hidden');
         updateUiWithProfileData(user);
     } else {
-        document.getElementById('userDisplayName').innerText = "Guest Vault";
-        document.getElementById('userAccountStatus').innerText = "Local Data Cache Only";
+        document.getElementById('userDisplayName').innerText = "Guest Operator";
+        document.getElementById('userAccountStatus').innerText = "Offline Storage Array";
         document.getElementById('userAvatar').src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
         if(formFields) formFields.classList.remove('hidden');
         if(logoutBtn) logoutBtn.classList.add('hidden');
@@ -213,7 +208,7 @@ function updateUiWithProfileData(userInstance = null) {
     const fallbackAvatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
 
     document.getElementById('userDisplayName').innerText = savedProf.name || fallbackName;
-    document.getElementById('userAccountStatus').innerText = savedProf.username ? `@${savedProf.username} • Cloud Synced` : "Cloud Synced";
+    document.getElementById('userAccountStatus').innerText = savedProf.username ? `@${savedProf.username} • Sync Live` : "Sync Live";
     document.getElementById('userAvatar').src = savedProf.avatar || fallbackAvatar;
 
     if (document.getElementById('editProfName')) {
@@ -238,7 +233,6 @@ window.saveCustomUserProfileData = function(e) {
     };
     saveStateToLocal();
     updateUiWithProfileData(auth.currentUser);
-    alert("Profile Updated Successfully!");
 };
 
 window.logoutUser = function() { signOut(auth); };
@@ -248,23 +242,16 @@ window.connectLiveSpotify = function() {
     if(isSpotifyLinked) {
         clearInterval(liveSpotifyCheckInterval);
         isSpotifyLinked = false;
-        document.getElementById('spotTrack').innerText = "Not Syncing";
-        document.getElementById('spotStatus').innerText = "Offline";
-        document.getElementById('spotIcon').classList.remove('playing-wave');
+        document.getElementById('spotTrack').innerText = "Telemetry Idle";
+        document.getElementById('spotStatus').innerText = "Spotify Audio Matrix Link Inactive";
         document.getElementById('musicXpBadge').classList.add('hidden');
         return;
     }
     isSpotifyLinked = true;
-    document.getElementById('spotTrack').innerText = "Authenticating...";
-    document.getElementById('spotStatus').innerText = "Searching App Stream...";
-    
-    setTimeout(() => {
-        document.getElementById('spotTrack').innerText = "Live: Calm Focus Stream";
-        document.getElementById('spotStatus').innerText = "Synchronized";
-        document.getElementById('spotIcon').classList.add('playing-wave');
-        document.getElementById('musicXpBadge').classList.remove('hidden');
-        liveSpotifyCheckInterval = setInterval(() => { alterXpEngine(0.2, true); }, 12000);
-    }, 2000);
+    document.getElementById('spotTrack').innerText = "Audio Core Synchronized";
+    document.getElementById('spotStatus').innerText = "Streaming Data Metrics Active";
+    document.getElementById('musicXpBadge').classList.remove('hidden');
+    liveSpotifyCheckInterval = setInterval(() => { alterXpEngine(0.2, true); }, 12000);
 };
 
 window.addNewCustomTaskToPool = function() {
@@ -273,7 +260,7 @@ window.addNewCustomTaskToPool = function() {
     const taskName = nameInput.value.trim();
     let taskXp = parseInt(xpInput.value);
     
-    if(!taskName || isNaN(taskXp)) { alert("Provide a valid item label."); return; }
+    if(!taskName || isNaN(taskXp)) return;
     taskXp = Math.max(1, Math.min(30, taskXp));
     
     appData.customTasks.push({ id: `cust-${Date.now()}`, name: taskName, base: taskXp, order: 7 });
@@ -289,11 +276,11 @@ window.toggleThemeSystem = function() {
 };
 
 window.navigate = function(panelId) {
-    document.querySelectorAll('.nav-btn, .mobile-nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.nav-btn, .mobile-dock-item').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     
     const desktopBtn = document.querySelector(`aside [onclick="window.navigate('${panelId}')"]`);
-    const mobileBtn = document.querySelector(`.mobile-nav-bar [onclick="window.navigate('${panelId}')"]`);
+    const mobileBtn = document.querySelector(`.mobile-dock-menu [onclick="window.navigate('${panelId}')"]`);
     
     if(desktopBtn) desktopBtn.classList.add('active');
     if(mobileBtn) mobileBtn.classList.add('active');
@@ -302,7 +289,6 @@ window.navigate = function(panelId) {
     if(panelId === 'saved') rebuildSavedView();
     if(panelId === 'rewards') rebuildRewardsChart();
     if(panelId === 'achievements') rebuildAchievementsChart();
-    if(panelId === 'customizer') updateUiWithProfileData(auth.currentUser);
 };
 
 function alterXpEngine(amount, isPositive) {
@@ -336,26 +322,23 @@ function buildCategorizedMatrix() {
         if(categoryKey === 'custom' && categorizedTasksPool.custom.length === 0) return;
         
         const wrapper = document.createElement('div');
-        wrapper.className = 'category-section';
-        wrapper.innerHTML = `<div class="category-title">${sectionLabels[categoryKey]}</div>`;
-        const layoutGrid = document.createElement('div');
-        layoutGrid.className = 'matrix-layout';
+        wrapper.className = 'category-group-wrapper';
+        wrapper.innerHTML = `<div class="category-header-title">${sectionLabels[categoryKey]}</div>`;
 
         categorizedTasksPool[categoryKey].forEach(task => {
             const count = internalStagedItems.filter(item => item.id === task.id).length;
             const card = document.createElement('div');
-            card.className = 'matrix-card';
+            card.className = 'matrix-interactive-row';
             card.innerHTML = `
-                <div class="matrix-card-title">${task.name} <b style="color:var(--cherry-glow);">(+${task.base} XP)</b></div>
-                <div class="cart-counter">
-                    <button class="cart-btn" onclick="window.modifyTaskDirectly('${task.id}', '${categoryKey}', -1)">−</button>
-                    <span class="cart-value" id="cartVal-${task.id}">${count}</span>
-                    <button class="cart-btn" onclick="window.modifyTaskDirectly('${task.id}', '${categoryKey}', 1)">+</button>
+                <div class="row-meta-info">${task.name} <span>+${task.base} XP RATING</span></div>
+                <div class="counter-pill">
+                    <button class="counter-btn" onclick="window.modifyTaskDirectly('${task.id}', '${categoryKey}', -1)">−</button>
+                    <span class="counter-lbl" id="cartVal-${task.id}">${count}</span>
+                    <button class="counter-btn" onclick="window.modifyTaskDirectly('${task.id}', '${categoryKey}', 1)">+</button>
                 </div>
             `;
-            layoutGrid.appendChild(card);
+            wrapper.appendChild(card);
         });
-        wrapper.appendChild(layoutGrid);
         targetRoot.appendChild(wrapper);
     });
 }
@@ -363,7 +346,7 @@ function buildCategorizedMatrix() {
 window.modifyTaskDirectly = function(taskId, categoryKey, step) {
     const referenceTask = categorizedTasksPool[categoryKey].find(t => t.id === taskId);
     if (step === 1) {
-        internalStagedItems.push({ id: taskId, name: `${referenceTask.name} (Session ${internalStagedItems.filter(i => i.id === taskId).length + 1})`, xp: referenceTask.base, order: referenceTask.order });
+        internalStagedItems.push({ id: taskId, name: `${referenceTask.name}`, xp: referenceTask.base, order: referenceTask.order });
     } else {
         for (let i = internalStagedItems.length - 1; i >= 0; i--) { if (internalStagedItems[i].id === taskId) { internalStagedItems.splice(i, 1); break; } }
     }
@@ -374,9 +357,9 @@ window.modifyTaskDirectly = function(taskId, categoryKey, step) {
 function refreshStagedReviewList() {
     const target = document.getElementById('stagedReview'); if(!target) return;
     target.innerHTML = '';
-    if (internalStagedItems.length === 0) { target.innerHTML = '<p style="padding:20px; color:var(--text-muted); margin:0;">Staging space empty</p>'; return; }
+    if (internalStagedItems.length === 0) { target.innerHTML = '<p style="padding:4px; color:var(--text-secondary); margin:0;">Queue deployment pipeline empty.</p>'; return; }
     internalStagedItems.forEach(item => {
-        const div = document.createElement('div'); div.className = 'ledger-row'; div.innerHTML = `<span>${item.name}</span>`; target.appendChild(div);
+        const div = document.createElement('div'); div.className = 'queue-item-strip'; div.innerHTML = `${item.name}`; target.appendChild(div);
     });
 }
 
@@ -393,28 +376,25 @@ window.commitRoutineString = function() {
 
 function rebuildSavedView() {
     const container = document.getElementById('savedContainer'); if(!container) return;
-    container.innerHTML = appData.savedProfiles.length === 0 ? '<p style="color:var(--text-muted);">No layout profiles created yet.</p>' : '';
+    container.innerHTML = appData.savedProfiles.length === 0 ? '<p style="color:var(--text-secondary); padding: 20px 0;">No active layout timelines preserved.</p>' : '';
 
     appData.savedProfiles.forEach(profile => {
         const bar = document.createElement('div');
-        bar.className = 'routine-bar';
+        bar.className = 'timeline-card-wrapper';
         bar.innerHTML = `
-            <div class="routine-bar-header">
+            <div class="timeline-card-header">
                 <span>${profile.title}</span>
-                <div class="profile-manage-actions">
-                    <button class="manage-icon-btn" onclick="window.openMatrixAppendModal(event, '${profile.id}')">+ Add</button>
-                    <button class="manage-icon-btn" style="color:#ff4444;" onclick="window.deleteWholeProfile(event, '${profile.id}')">Delete</button>
-                </div>
+                <button class="node-trigger-btn" style="color:#ff4757; border-color: rgba(255,71,87,0.2); width:auto; padding:8px 16px;" onclick="window.deleteWholeProfile(event, '${profile.id}')">Drop Matrix</button>
             </div>
-            <div class="routine-content-accordion" id="accordion-${profile.id}">
-                <div class="timeline-sub-container"><div class="timeline-sub-header">Morning Slots</div><div class="ledger-box" id="ledger-morning-${profile.id}"></div></div>
-                <div class="timeline-sub-container"><div class="timeline-sub-header">Daytime Matrix</div><div class="ledger-box" id="ledger-midday-${profile.id}"></div></div>
-                <div class="timeline-sub-container"><div class="timeline-sub-header">Night Rituals</div><div class="ledger-box" id="ledger-night-${profile.id}"></div></div>
+            <div class="timeline-card-body-accordion" id="accordion-${profile.id}">
+                <div class="sub-timeline-section"><div class="sub-timeline-title">Morning Target Deck</div><div style="display:flex; flex-direction:column; gap:12px;" id="ledger-morning-${profile.id}"></div></div>
+                <div class="sub-timeline-section"><div class="sub-timeline-title">Midday & Core Execution</div><div style="display:flex; flex-direction:column; gap:12px;" id="ledger-midday-${profile.id}"></div></div>
+                <div class="sub-timeline-section"><div class="sub-timeline-title">Night Terminal Sequence</div><div style="display:flex; flex-direction:column; gap:12px;" id="ledger-night-${profile.id}"></div></div>
             </div>
         `;
 
-        bar.addEventListener('click', (e) => {
-            if (e.target.closest('.profile-manage-actions') || e.target.closest('.ledger-row')) return;
+        bar.querySelector('.timeline-card-header').addEventListener('click', (e) => {
+            if(e.target.tagName === 'BUTTON') return;
             document.getElementById(`accordion-${profile.id}`).classList.toggle('open');
         });
 
@@ -424,21 +404,22 @@ function rebuildSavedView() {
             const trackingId = `${profile.id}-${task.instanceId}`;
             const isCompleted = appData.checksHistory.includes(trackingId);
             const row = document.createElement('div');
-            row.className = `ledger-row ${isCompleted ? 'checked-row' : ''}`;
+            row.className = `interactive-task-row ${isCompleted ? 'checked' : ''}`;
             row.innerHTML = `
-                <div style="display:flex; align-items:center;"><input type="checkbox" class="custom-check" ${isCompleted ? 'checked' : ''}><span>${task.name}</span></div>
-                <button class="row-action-btn" onclick="window.removeSingleTaskInline(event, '${profile.id}', '${task.instanceId}', ${task.xp})">&times;</button>
+                <div class="premium-checkbox-wrapper"><input type="checkbox" ${isCompleted ? 'checked' : ''}><span>${task.name}</span></div>
+                <button style="background:none; border:none; color:#ff4757; font-size:1.4rem; cursor:pointer;" onclick="window.removeSingleTaskInline(event, '${profile.id}', '${task.instanceId}', ${task.xp})">&times;</button>
             `;
 
             row.addEventListener('click', (e) => {
-                if (e.target.closest('.row-action-btn')) return;
-                e.stopPropagation();
-                const checkState = !row.classList.contains('checked-row');
+                if (e.target.tagName === 'BUTTON') return;
+                const checkBox = row.querySelector('input');
+                const checkState = !row.classList.contains('checked');
+                
                 if (checkState) {
-                    row.classList.add('checked-row'); row.querySelector('.custom-check').checked = true;
+                    row.classList.add('checked'); checkBox.checked = true;
                     appData.checksHistory.push(trackingId); alterXpEngine(task.xp, true);
                 } else {
-                    row.classList.remove('checked-row'); row.querySelector('.custom-check').checked = false;
+                    row.classList.remove('checked'); checkBox.checked = false;
                     appData.checksHistory = appData.checksHistory.filter(id => id !== trackingId); alterXpEngine(task.xp, false);
                 }
             });
@@ -449,30 +430,6 @@ function rebuildSavedView() {
         });
         container.appendChild(bar);
     });
-}
-
-window.openMatrixAppendModal = function(e, profileId) {
-    e.stopPropagation(); activeTargetProfileIdForAppend = profileId;
-    const scroller = document.getElementById('modalTemplateScroller'); if(!scroller) return;
-    scroller.innerHTML = '';
-    Object.keys(categorizedTasksPool).forEach(key => {
-        categorizedTasksPool[key].forEach(tmpl => {
-            const div = document.createElement('div'); div.className = 'modal-item-row'; div.innerText = tmpl.name;
-            div.onclick = () => executeMatrixElementSelectionAppend(tmpl);
-            scroller.appendChild(div);
-        });
-    });
-    document.getElementById('taskSelectorModal').classList.add('open');
-};
-
-window.closeMatrixAppendModal = function() { document.getElementById('taskSelectorModal').classList.remove('open'); };
-
-function executeMatrixElementSelectionAppend(templateObj) {
-    const profile = appData.savedProfiles.find(p => p.id === activeTargetProfileIdForAppend);
-    if(profile) {
-        profile.payload.push({ id: templateObj.id, name: `${templateObj.name} (Added)`, xp: templateObj.base, order: templateObj.order, instanceId: `inst-append-${Date.now()}` });
-        saveStateToLocal(); rebuildSavedView(); window.closeMatrixAppendModal();
-    }
 }
 
 window.removeSingleTaskInline = function(e, profileId, instanceId, xp) {
@@ -488,11 +445,9 @@ window.removeSingleTaskInline = function(e, profileId, instanceId, xp) {
 
 window.deleteWholeProfile = function(e, profileId) {
     e.stopPropagation();
-    if(confirm("Confirm removal of profile?")) {
-        appData.savedProfiles = appData.savedProfiles.filter(p => p.id !== profileId);
-        saveStateToLocal(); rebuildSavedView();
-        rebuildAchievementsChart();
-    }
+    appData.savedProfiles = appData.savedProfiles.filter(p => p.id !== profileId);
+    saveStateToLocal(); rebuildSavedView();
+    rebuildAchievementsChart();
 };
 
 function rebuildRewardsChart() {
@@ -502,8 +457,8 @@ function rebuildRewardsChart() {
         const isUnlocked = appData.level >= i;
         const isClaimed = appData.claimedRewards.includes(i);
         const card = document.createElement('div');
-        card.className = `reward-tier-card ${isUnlocked && !isClaimed ? 'unlocked-claimable' : ''}`;
-        card.innerHTML = `<div class="tier-badge">LVL ${i}</div><button class="redeem-trigger-btn" onclick="window.openCongratulationsModal(${i})">${isClaimed ? 'Claimed ✓' : 'Reward Node'}</button>`;
+        card.className = `reward-node-card ${isUnlocked && !isClaimed ? 'claimable' : ''} ${isClaimed ? 'claimed' : ''}`;
+        card.innerHTML = `<div class="node-tier-title">RANK LEVEL ${i}</div><button class="node-trigger-btn" onclick="window.openCongratulationsModal(${i})">${isClaimed ? 'Claim Secure ✓' : 'Verify Node'}</button>`;
         grid.appendChild(card);
     }
 }
@@ -514,8 +469,8 @@ function rebuildAchievementsChart() {
     systemicAchievementsPool.forEach(ach => {
         const hasUnlocked = ach.requirement(appData);
         const card = document.createElement('div');
-        card.className = `achievement-card ${hasUnlocked ? 'unlocked' : ''}`;
-        card.innerHTML = `<div class="ach-icon">${ach.icon}</div><div style="font-weight:700; font-size:0.95rem;">${ach.title}</div><p style="margin:4px 0 0; font-size:0.75rem; color:var(--text-muted);">${ach.desc}</p>`;
+        card.className = `achievement-node-card ${hasUnlocked ? 'unlocked' : ''}`;
+        card.innerHTML = `<div class="badge-avatar-icon">${ach.icon}</div><div style="font-weight:800; font-size:1.1rem;">${ach.title}</div><p style="margin:0; font-size:0.85rem; color:var(--text-secondary); line-height:1.5;">${ach.desc}</p>`;
         grid.appendChild(card);
     });
 }
@@ -527,7 +482,7 @@ window.openCongratulationsModal = function(level) {
     document.getElementById('congratulationsRewardModal').classList.add('open');
 };
 
-window.selectRewardPathOption = function(variantChoice) {
+window.selectRewardPathOption = function() {
     if (!currentActiveRedeemLevelTarget) return;
     appData.claimedRewards.push(currentActiveRedeemLevelTarget);
     saveStateToLocal();
@@ -547,8 +502,8 @@ function parseCalculatedCycle(initStr) {
     target.innerHTML = '';
     phases.forEach(p => {
         const active = activeDay >= p.start && activeDay <= p.end;
-        const block = document.createElement('div'); block.className = `period-card ${active ? 'current' : ''}`;
-        block.innerHTML = `<div class="period-card-title">${p.title}</div><p style="font-size:0.8rem; margin:4px 0;">${p.desc}</p>${active ? `<b style='color:var(--cherry-glow); font-size:0.85rem;'>Day: ${activeDay}</b>`:''}`;
+        const block = document.createElement('div'); block.className = `cycle-data-card ${active ? 'active-phase' : ''}`;
+        block.innerHTML = `<div style="font-weight:800; font-size:1.1rem;">${p.title}</div><p style="font-size:0.9rem; margin:10px 0; line-height:1.5; color:var(--text-secondary);">${p.desc}</p>${active ? `<span style='color:var(--accent-glow); font-weight:900; font-size:0.95rem;'>Current Cycle Day: ${activeDay}</span>`:''}`;
         target.appendChild(block);
     });
 }
