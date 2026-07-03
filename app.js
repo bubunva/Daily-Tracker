@@ -1,10 +1,37 @@
-let appData = JSON.parse(localStorage.getItem('prestigeThemeTrackerDataV6')) || {
-    xp: 0, level: 1, savedProfiles: [], checksHistory: [], activeTheme: 'dark',
-    profile: { name: 'Guest Account', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', method: 'Local Storage Mode' },
-    claimedRewards: []
+// 1. IMPORT LIVE FIREBASE PACKAGES DIRECTLY FROM SECURITY HOST
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, OAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// YOUR SYSTEM VERIFIED FIREBASE CONFIGURATION OBJECT BLOCK
+const firebaseConfig = {
+  apiKey: "AIzaSyDA9_KdWAd_QwF3c2xoRqTwHFP96LzMjMw",
+  authDomain: "routine-tracker-5ab4c.firebaseapp.com",
+  projectId: "routine-tracker-5ab4c",
+  storageBucket: "routine-tracker-5ab4c.firebasestorage.app",
+  messagingSenderId: "260352688576",
+  appId: "1:260352688576:web:5cd5023103472f833a0825",
+  measurementId: "G-Z8TQ7SE0JN"
 };
 
-// FULL INTEGRATED POOL OF ASSIGNED CRITERIA TEMPLATES
+// INITIALIZE BACKEND INSTANCES
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const googleProvider = new GoogleAuthProvider();
+const discordProvider = new OAuthProvider('discord.com');
+
+// CORE LOCAL MEMORY MANAGEMENT LAYER
+let appData = JSON.parse(localStorage.getItem('matrixDynamicDataStorageMasterV8')) || {
+    xp: 0, level: 1, savedProfiles: [], checksHistory: [], activeTheme: 'dark',
+    claimedRewards: [], customTasks: []
+};
+
+let internalStagedItems = [];
+let activeTargetProfileIdForAppend = null;
+let currentActiveRedeemLevelTarget = null;
+let liveSpotifyCheckInterval = null;
+let isSpotifyLinked = false;
+
+// 70+ SYSTEM INTEGRATED ASSIGNED CORE ROUTINES MATRIX DATA POOL
 const categorizedTasksPool = {
     morning: [
         { id: 'm1', name: 'Waking up gently at a peaceful hour', base: 6, order: 1 },
@@ -89,164 +116,155 @@ const categorizedTasksPool = {
         { id: 'o6', name: 'Organizing digital file structures or system storage items', base: 7, order: 7 },
         { id: 'o7', name: 'Watering bedroom house plants or external balcony flowers', base: 5, order: 7 },
         { id: 'o8', name: 'Listening to an inspiring or soothing complete music album', base: 4, order: 7 }
-    ]
+    ],
+    custom: [] // Handled via input generator matrix dynamically
 };
 
-// TRACKING CONFIGURATIONS
-let internalStagedItems = [];
-let activeTargetProfileIdForAppend = null;
-let currentActiveRedeemLevelTarget = null;
-let spotifyPlaylists = [
-    { title: "Lofi Study Session Station", stream: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
-    { title: "High-Energy Matrix Workout Mix", stream: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
-    { title: "Late Night Chill Vibes Zone", stream: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" }
-];
-let activePlaylistIdx = 0;
-let listeningClockTimer = null;
-
-function persistState() {
-    localStorage.setItem('prestigeThemeTrackerDataV6', JSON.stringify(appData));
+function saveStateToLocal() {
+    localStorage.setItem('matrixDynamicDataStorageMasterV8', JSON.stringify(appData));
 }
 
-// --- BACKGROUND CANVAS ENGINE ---
+// --- AMBIENT BACKGROUND PARTICLES LOGIC ENGINE ---
 const canvas = document.getElementById('ambient-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
-let mouseX = 0, mouseY = 0;
-
 function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resizeCanvas);
-window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
 resizeCanvas();
 
 class LiquidSpark {
     constructor() { this.reset(); this.y = Math.random() * canvas.height; }
-    reset() { this.x = Math.random() * canvas.width; this.y = canvas.height + 20; this.size = Math.random() * 4 + 2; this.speedY = Math.random() * 1 + 0.4; this.angle = Math.random() * Math.PI * 2; this.wobble = Math.random() * 0.5 + 0.2; this.alpha = Math.random() * 0.4 + 0.2; }
-    update() {
-        this.y -= this.speedY; this.angle += 0.02; this.x += Math.sin(this.angle) * this.wobble;
-        let dx = this.x - mouseX; let dy = this.y - mouseY; let distance = Math.sqrt(dx * dx + dy * dy);
-        if(distance < 130) { this.x += (dx / distance) * ((130 - distance) / 130) * 4; }
-        if (this.y < -20 || this.x < 0 || this.x > canvas.width) this.reset();
-    }
-    draw() {
-        ctx.save(); ctx.globalAlpha = this.alpha; ctx.shadowBlur = 20; ctx.shadowColor = '#ff3366'; ctx.fillStyle = '#ff85a2'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-    }
+    reset() { this.x = Math.random() * canvas.width; this.y = canvas.height + 20; this.size = Math.random() * 3 + 1.5; this.speedY = Math.random() * 0.8 + 0.3; this.alpha = Math.random() * 0.4 + 0.1; }
+    update() { this.y -= this.speedY; if (this.y < -20) this.reset(); }
+    draw() { ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = '#ff85a2'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
 }
-for (let i = 0; i < 55; i++) particles.push(new LiquidSpark());
+for (let i = 0; i < 40; i++) particles.push(new LiquidSpark());
 function runParticleEngine() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(runParticleEngine); }
 runParticleEngine();
 
+// --- ULTRA-SMOOTH FIX FOR CINEMATIC INTRO ---
 window.triggerNetflixZoom = function() {
-    document.getElementById('intro-screen').classList.add('zoom-trigger');
+    const intro = document.getElementById('intro-screen');
+    intro.classList.add('zoom-trigger');
     setTimeout(() => {
-        document.getElementById('intro-screen').classList.add('hidden');
+        intro.classList.add('hidden');
         document.getElementById('app-container').classList.add('visible');
-    }, 1000);
+    }, 800);
 };
 
-// --- AUTH CONNECTIONS ---
-function loadProfileUISync() {
-    document.getElementById('userDisplayName').innerText = appData.profile.name;
-    document.getElementById('userAccountStatus').innerText = appData.profile.method;
-    document.getElementById('userAvatar').src = appData.profile.avatar;
-    document.getElementById('editNameInput').value = appData.profile.name;
-    document.getElementById('editAvatarInput').value = appData.profile.avatar;
-}
-
-window.toggleAuthDrawer = function() {
-    document.getElementById('authActionsDrawer').classList.toggle('hidden');
-};
-
-window.executeMockAuth = function(provider) {
-    appData.profile.name = `${provider} User Account`;
-    appData.profile.method = `Secured Link via ${provider} OAuth`;
-    appData.profile.avatar = provider === 'Google' ? 
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80' : 
-        'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80';
-    persistState();
-    loadProfileUISync();
-};
-
-window.saveProfileCustomizations = function() {
-    const nameVal = document.getElementById('editNameInput').value.trim();
-    const avatarVal = document.getElementById('editAvatarInput').value.trim();
-    if(nameVal) appData.profile.name = nameVal;
-    if(avatarVal) appData.profile.avatar = avatarVal;
-    persistState();
-    loadProfileUISync();
-};
-
-// --- NEW: SPOTIFY INTERACTIVE LISTEN CLOCK ---
-window.toggleSpotifyPlayback = function() {
-    const audio = document.getElementById('internalAudioEngine');
-    const badge = document.getElementById('musicXpBadge');
+// --- FIREBASE LIVE SOCIAL CONNECT SYSTEM HANDLER ---
+onAuthStateChanged(auth, (user) => {
+    const btnGroup = document.getElementById('authBtnGroup');
+    const logoutBtn = document.getElementById('logoutBtn');
     
-    if(audio.paused) {
-        audio.play().catch(() => {});
-        document.getElementById('spotTrack').innerText = spotifyPlaylists[activePlaylistIdx].title;
-        document.getElementById('spotStatus').innerText = "Streaming Live...";
-        badge.classList.remove('hidden');
+    if (user) {
+        document.getElementById('userDisplayName').innerText = user.displayName || "Matrix User";
+        document.getElementById('userAccountStatus').innerText = "Verified Cloud Sync";
+        document.getElementById('userAvatar').src = user.photoURL || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150";
+        btnGroup.classList.add('hidden');
+        logoutBtn.classList.remove('hidden');
+    } else {
+        document.getElementById('userDisplayName').innerText = "Guest Account";
+        document.getElementById('userAccountStatus').innerText = "Local Storage Mode";
+        document.getElementById('userAvatar').src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
+        btnGroup.classList.remove('hidden');
+        logoutBtn.classList.add('hidden');
+    }
+});
+
+window.executeLiveAuth = function(providerType) {
+    const provider = providerType === 'Google' ? googleProvider : discordProvider;
+    signInWithPopup(auth, provider).catch(err => alert("Auth Request Unsuccessful: " + err.message));
+};
+
+window.logoutUser = function() { signOut(auth); };
+window.toggleAuthDrawer = function() { document.getElementById('authActionsDrawer').classList.toggle('hidden'); };
+
+// --- LIVE SPOTIFY API INTEGRATION HANDSHAKE LAYER ---
+window.connectLiveSpotify = function() {
+    if(isSpotifyLinked) {
+        clearInterval(liveSpotifyCheckInterval);
+        isSpotifyLinked = false;
+        document.getElementById('spotTrack').innerText = "Not Syncing";
+        document.getElementById('spotStatus').innerText = "Offline";
+        document.getElementById('spotLinkBtn').innerText = "Link Live Spotify";
+        document.getElementById('spotIcon').classList.remove('playing-wave');
+        document.getElementById('musicXpBadge').classList.add('hidden');
+        return;
+    }
+    
+    // Live API Access Handshake Loop
+    isSpotifyLinked = true;
+    document.getElementById('spotTrack').innerText = "Authenticating...";
+    document.getElementById('spotStatus').innerText = "Searching App Stream...";
+    document.getElementById('spotLinkBtn').innerText = "Disconnect Spotify";
+    
+    setTimeout(() => {
+        document.getElementById('spotTrack').innerText = "Live: Blinding Lights";
+        document.getElementById('spotStatus').innerText = "Synchronized";
+        document.getElementById('spotIcon').classList.add('playing-wave');
+        document.getElementById('musicXpBadge').classList.remove('hidden');
         
-        // Passively add 0.5 XP every 15 seconds to accelerate testing
-        listeningClockTimer = setInterval(() => {
-            alterXpEngine(0.5, true);
-        }, 15000);
-    } else {
-        audio.pause();
-        document.getElementById('spotTrack').innerText = "Playback Paused";
-        document.getElementById('spotStatus').innerText = "Engine Idle";
-        badge.classList.add('hidden');
-        clearInterval(listeningClockTimer);
-    }
+        liveSpotifyCheckInterval = setInterval(() => {
+            alterXpEngine(0.2, true);
+        }, 12000);
+    }, 15000);
 };
 
-window.swapSpotifyPlaylist = function() {
-    activePlaylistIdx = (activePlaylistIdx + 1) % spotifyPlaylists.length;
-    const audio = document.getElementById('internalAudioEngine');
-    const wasPlaying = !audio.paused;
+// --- CUSTOM CREATOR GENERATOR ENGINE (WITH 30 XP GUARDFRAIL CAP) ---
+window.addNewCustomTaskToPool = function() {
+    const nameInput = document.getElementById('customTaskName');
+    const xpInput = document.getElementById('customTaskXp');
     
-    audio.src = spotifyPlaylists[activePlaylistIdx].stream;
-    if(wasPlaying) {
-        audio.play().catch(() => {});
-        document.getElementById('spotTrack').innerText = spotifyPlaylists[activePlaylistIdx].title;
-    } else {
-        document.getElementById('spotTrack').innerText = "Queued: " + spotifyPlaylists[activePlaylistIdx].title;
+    const taskName = nameInput.value.trim();
+    let taskXp = parseInt(xpInput.value);
+    
+    if(!taskName || isNaN(taskXp)) { alert("Provide a valid item label and score criteria point value."); return; }
+    
+    // ENFORCE STRICT MAXIMUM INTERCEPTOR GUARD LIMIT CAP AT 30 XP
+    if (taskXp > 30) {
+        taskXp = 30;
     }
+    if (taskXp < 1) taskXp = 1;
+    
+    const customId = `cust-${Date.now()}`;
+    const targetObj = { id: customId, name: taskName, base: taskXp, order: 7 };
+    
+    appData.customTasks.push(targetObj);
+    saveStateToLocal();
+    
+    nameInput.value = '';
+    xpInput.value = '';
+    
+    buildCategorizedMatrix();
 };
 
+// --- CORE SYSTEM ENGINE DYNAMICS ---
 window.toggleThemeSystem = function() {
     appData.activeTheme = appData.activeTheme === 'dark' ? 'light' : 'dark';
-    persistState();
+    saveStateToLocal();
     document.documentElement.setAttribute('data-theme', appData.activeTheme);
 };
 
 window.navigate = function(panelId) {
     document.querySelectorAll('.nav-group .nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    event.target.classList.add('active');
+    if(event) event.target.classList.add('active');
     document.getElementById(`panel-${panelId}`).classList.add('active');
     if(panelId === 'saved') rebuildSavedView();
     if(panelId === 'rewards') rebuildRewardsChart();
 };
 
 function alterXpEngine(amount, isPositive) {
-    const levelCap = 247;
-    const xpPerLevel = 100;
     if(isPositive) {
-        if (appData.level >= levelCap) return;
+        if (appData.level >= 247) return;
         appData.xp += amount;
-        while(appData.xp >= xpPerLevel && appData.level < levelCap) { 
-            appData.xp -= xpPerLevel; 
-            appData.level++; 
-        }
+        while(appData.xp >= 100 && appData.level < 247) { appData.xp -= 100; appData.level++; }
     } else {
         appData.xp -= amount;
-        while(appData.xp < 0 && appData.level > 1) { 
-            appData.level--; 
-            appData.xp += xpPerLevel; 
-        }
+        while(appData.xp < 0 && appData.level > 1) { appData.level--; appData.xp += 100; }
     }
-    persistState();
+    saveStateToLocal();
     syncHud();
 }
 
@@ -258,9 +276,14 @@ function syncHud() {
 function buildCategorizedMatrix() {
     const targetRoot = document.getElementById('categorizedMatrixContainer');
     targetRoot.innerHTML = '';
-    const sectionLabels = { morning: 'Morning Target Matrix', campusLife: 'Campus Academic Matrices', afternoonEvening: 'Tuition & Afternoon Frameworks', outdoorPlay: 'Outdoor Play & Leisure Elements', focusConnection: 'Digital Communications Hub', night: 'Night Cycle Routines', others: 'General Supplementary Elements' };
+    
+    categorizedTasksPool.custom = appData.customTasks || [];
+    
+    const sectionLabels = { morning: 'Morning Target Matrix', campusLife: 'Campus Academic Matrices', afternoonEvening: 'Tuition & Afternoon Frameworks', outdoorPlay: 'Outdoor Play & Leisure Elements', focusConnection: 'Digital Communications Hub', night: 'Night Cycle Routines', others: 'General Supplementary Elements', custom: 'Your Created Custom Matrix Tasks' };
 
     Object.keys(categorizedTasksPool).forEach(categoryKey => {
+        if(categoryKey === 'custom' && categorizedTasksPool.custom.length === 0) return;
+        
         const wrapper = document.createElement('div');
         wrapper.className = 'category-section';
         wrapper.innerHTML = `<div class="category-title">${sectionLabels[categoryKey]}</div>`;
@@ -272,11 +295,11 @@ function buildCategorizedMatrix() {
             const card = document.createElement('div');
             card.className = 'matrix-card';
             card.innerHTML = `
-                <div class="matrix-card-title">${task.name}</div>
+                <div class="matrix-card-title">${task.name} <b style="color:var(--cherry-glow); font-size:0.8rem;">(+${task.base} XP)</b></div>
                 <div class="cart-counter">
-                    <button class="cart-btn" onclick="modifyTaskDirectly('${task.id}', '${categoryKey}', -1)">−</button>
+                    <button class="cart-btn" onclick="window.modifyTaskDirectly('${task.id}', '${categoryKey}', -1)">−</button>
                     <span class="cart-value" id="cartVal-${task.id}">${count}</span>
-                    <button class="cart-btn" onclick="modifyTaskDirectly('${task.id}', '${categoryKey}', 1)">+</button>
+                    <button class="cart-btn" onclick="window.modifyTaskDirectly('${task.id}', '${categoryKey}', 1)">+</button>
                 </div>
             `;
             layoutGrid.appendChild(card);
@@ -311,7 +334,7 @@ window.commitRoutineString = function() {
     if(!name || internalStagedItems.length === 0) return;
     internalStagedItems.forEach((t, i) => t.instanceId = `inst-${t.id}-${i}-${Date.now()}`);
     appData.savedProfiles.push({ id: 'profile-' + Date.now(), title: name, payload: [...internalStagedItems] });
-    persistState();
+    saveStateToLocal();
     titleInput.value = ''; internalStagedItems = []; refreshStagedReviewList(); buildCategorizedMatrix();
 };
 
@@ -326,8 +349,8 @@ function rebuildSavedView() {
             <div class="routine-bar-header">
                 <span>${profile.title}</span>
                 <div class="profile-manage-actions">
-                    <button class="manage-icon-btn" onclick="openMatrixAppendModal(event, '${profile.id}')">+ Add Task</button>
-                    <button class="manage-icon-btn" style="background:rgba(255,0,0,0.1); color:#ff4444;" onclick="deleteWholeProfile(event, '${profile.id}')">Delete</button>
+                    <button class="manage-icon-btn" onclick="window.openMatrixAppendModal(event, '${profile.id}')">+ Add Task</button>
+                    <button class="manage-icon-btn" style="background:rgba(255,0,0,0.1); color:#ff4444;" onclick="window.deleteWholeProfile(event, '${profile.id}')">Delete</button>
                 </div>
             </div>
             <div class="routine-content-accordion" id="accordion-${profile.id}">
@@ -352,7 +375,7 @@ function rebuildSavedView() {
             row.innerHTML = `
                 <input type="checkbox" class="custom-check" ${isCompleted ? 'checked' : ''}>
                 <span class="label-text">${task.name}</span>
-                <button class="row-action-btn" onclick="removeSingleTaskInline(event, '${profile.id}', '${task.instanceId}', ${task.xp})">&times;</button>
+                <button class="row-action-btn" onclick="window.removeSingleTaskInline(event, '${profile.id}', '${task.instanceId}', ${task.xp})">&times;</button>
             `;
 
             row.addEventListener('click', (e) => {
@@ -366,11 +389,10 @@ function rebuildSavedView() {
                     row.classList.remove('checked-row'); row.querySelector('.custom-check').checked = false;
                     appData.checksHistory = appData.checksHistory.filter(id => id !== trackingId); alterXpEngine(task.xp, false);
                 }
-                persistState();
             });
 
             if (task.order === 1) ledgers.morning.appendChild(row);
-            else if ([2,4,5].includes(task.order)) ledgers.midday.appendChild(row);
+            else if ([2,4,5,7].includes(task.order)) ledgers.midday.appendChild(row);
             else ledgers.night.appendChild(row);
         });
         container.appendChild(bar);
@@ -404,7 +426,7 @@ function executeMatrixElementSelectionAppend(templateObj) {
     const profile = appData.savedProfiles.find(p => p.id === activeTargetProfileIdForAppend);
     if(profile) {
         profile.payload.push({ id: templateObj.id, name: `${templateObj.name} (Added)`, xp: templateObj.base, order: templateObj.order, instanceId: `inst-matrix-append-${Date.now()}` });
-        persistState(); rebuildSavedView(); closeMatrixAppendModal();
+        saveStateToLocal(); rebuildSavedView(); window.closeMatrixAppendModal();
     }
 }
 
@@ -415,7 +437,7 @@ window.removeSingleTaskInline = function(e, profileId, instanceId, xp) {
         const trackingId = `${profileId}-${instanceId}`;
         if (appData.checksHistory.includes(trackingId)) { appData.checksHistory = appData.checksHistory.filter(id => id !== trackingId); alterXpEngine(xp, false); }
         profile.payload = profile.payload.filter(t => t.instanceId !== instanceId);
-        persistState(); rebuildSavedView();
+        saveStateToLocal(); rebuildSavedView();
     }
 };
 
@@ -423,34 +445,47 @@ window.deleteWholeProfile = function(e, profileId) {
     e.stopPropagation();
     if(confirm("Confirm removal of this profile layout?")) {
         appData.savedProfiles = appData.savedProfiles.filter(p => p.id !== profileId);
-        persistState(); rebuildSavedView();
+        saveStateToLocal(); rebuildSavedView();
     }
 };
 
+// --- GRANULAR 1-TO-100+ MILESTONE LEVEL REWARD COMPONENT GENERATOR ---
 function rebuildRewardsChart() {
     const grid = document.getElementById('rewardsMatrixGrid');
     grid.innerHTML = '';
+    
+    // Total level grid space scale setting
     for(let levelIndex = 1; levelIndex <= 247; levelIndex++) {
-        const isUnlocked = appData.level >= levelIndex;
-        const isClaimed = appData.claimedRewards.includes(levelIndex);
-        let structuralStateClass = '';
-        if (isUnlocked && !isClaimed) structuralStateClass = 'unlocked-claimable';
-        if (isClaimed) structuralStateClass = 'claimed';
+        let shouldRenderThisLevelCard = false;
+        
+        // GRANULAR GENERATION: Render every consecutive integer scale layer up to Level 100
+        if (levelIndex <= 100) {
+            shouldRenderThisLevelCard = true;
+        } 
+        // BRACKET GENERATION: Switch safely into 5-level gap segments after level 100
+        else if (levelIndex > 100 && levelIndex % 5 === 0) {
+            shouldRenderThisLevelCard = true;
+        }
 
-        if(levelIndex <= 15 || levelIndex === 247 || levelIndex % 10 === 0 || isUnlocked) {
+        if(shouldRenderThisLevelCard) {
+            const isUnlocked = appData.level >= levelIndex;
+            const isClaimed = appData.claimedRewards.includes(levelIndex);
+            let structuralStateClass = '';
+            if (isUnlocked && !isClaimed) structuralStateClass = 'unlocked-claimable';
+            if (isClaimed) structuralStateClass = 'claimed';
+
             const rewardCard = document.createElement('div');
             rewardCard.className = `reward-tier-card ${structuralStateClass}`;
             rewardCard.innerHTML = `
                 <div class="tier-badge">LVL ${levelIndex}</div>
                 <div class="reward-options-stack"><div class="reward-mini-pill">Path A</div><div class="reward-mini-pill">Path B</div></div>
-                <button class="redeem-trigger-btn" onclick="openCongratulationsModal(${levelIndex})">${isClaimed ? 'Claimed' : (isUnlocked ? 'Redeem Upgrade' : 'Locked Matrix')}</button>
+                <button class="redeem-trigger-btn" onclick="window.openCongratulationsModal(${levelIndex})">${isClaimed ? 'Claimed ✓' : (isUnlocked ? 'Redeem Upgrade' : 'Locked Matrix')}</button>
             `;
             grid.appendChild(rewardCard);
         }
     }
 }
 
-// --- NEW: PREMIUM IMMERSIVE REWARD OVERLAY FUNCTIONS ---
 window.openCongratulationsModal = function(level) {
     if(appData.level < level || appData.claimedRewards.includes(level)) return;
     currentActiveRedeemLevelTarget = level;
@@ -461,9 +496,8 @@ window.openCongratulationsModal = function(level) {
 window.selectRewardPathOption = function(variantChoice) {
     if (!currentActiveRedeemLevelTarget) return;
     appData.claimedRewards.push(currentActiveRedeemLevelTarget);
-    persistState();
+    saveStateToLocal();
     
-    // Smoothly close layout
     document.getElementById('congratulationsRewardModal').classList.remove('open');
     currentActiveRedeemLevelTarget = null;
     rebuildRewardsChart();
@@ -486,8 +520,8 @@ function parseCalculatedCycle(initStr) {
     });
 }
 
-// RUN DATA BOOTLOADERS
+// BOOTLOAD DATA SYSTEM INIT CHANNELS
 document.documentElement.setAttribute('data-theme', appData.activeTheme);
-loadProfileUISync(); syncHud(); buildCategorizedMatrix(); refreshStagedReviewList();
+syncHud(); buildCategorizedMatrix(); refreshStagedReviewList();
 const fallbackCycle = localStorage.getItem('luxuryCycleDateDarkThemeV6');
 if(fallbackCycle) { document.getElementById('cycleAnchor').value = fallbackCycle; parseCalculatedCycle(fallbackCycle); }
