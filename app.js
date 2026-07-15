@@ -1,5 +1,5 @@
 // ==========================================================================
-// SYSTEM PARAMETERS & POOL STRUCTURES
+// DATA POOLS & STATE SYSTEM
 // ==========================================================================
 const DEFAULT_TASK_POOL = {
     "Vitals & Energy": [
@@ -33,25 +33,24 @@ const DEFAULT_ACHIEVEMENTS = [
     { id: "completionist", label: "Execution Master", details: "Successfully execute and verify every component on any operational ledger.", xp: 200, unlocked: false }
 ];
 
-// ROMANTIC LOVE LETTER DATA MATRIX
+// ROMANTIC ANNIVERSARY WRITTEN LETTER STRING
 const SECRET_LETTER_TEXT = `Hey,
 
-I know it started eight months ago. But during those eight months, you have become someone irreplaceable in my life. I cannot replace you even if I wanted to. I love you a lot. 
+I know it started eight months ago. But during those eight months, you have become someone irreplaceable in my life. I cannot replace you even if I wanted to. I love you a lot.
 
-I just want to tell you that the letter I wrote is not AI, and it was never AI. I wrote it, but if you think it's AI, I wanna say everything I want to with my words. Like, I'm speaking this out, but, you know, the Google keyboard is typing it. 
+I just want to tell you that the letter I wrote is not AI, and it was never AI. I wrote it, but if you think it's AI, I wanna say everything I want to with my words. Like, I'm speaking this out, but, you know, the Google keyboard is typing it.
 
-If you don't feel like you're not loved, I just want you to remember that everything I do is for you. For you to feel better. And no, I don't want to replace you. I don't want to look for someone else because I love you. I want to be with you, forever. And it's my choice to be with you. I have chosen you for life. I hope you have done the same. 
+If you don't feel like you're not loved, I just want you to remember that everything I do is for you. For you to feel better. And no, I don't want to replace you. I don't want to look for someone else because I love you. I want to be with you, forever. And it's my choice to be with you. I have chosen you for life. I hope you have done the same.
 
-I don't know how your mind is working right now, but I'm trying to imprint myself as much as I can. And yeah, I will keep trying. And I, I don't know that you know that I care a lot for you. Because I really do try a lot. And yeah. 
+I don't know how your mind is working right now, but I'm trying to imprint myself as much as I can. And yeah, I will keep trying. And I, I don't know that you know that I care a lot for you. Because I really do try a lot. And yeah.
 
-I'm sorry for not being the streamer, especially, but I'll try my best, okay? 
+I'm sorry for not being the streamer, especially, but I'll try my best, okay?
 
 I love you. Bye-bye.
 
 Happy eight months, baby. ❤️`;
 
-// Local state engines
-let activeUser = null;
+// State Drivers
 let currentXp = 0;
 let currentLvl = 1;
 let currentWorkspaceQueue = [];
@@ -60,7 +59,7 @@ let localCustomTaskPool = JSON.parse(localStorage.getItem('customTaskPool')) || 
 let claimedRewards = JSON.parse(localStorage.getItem('claimedRewards')) || [];
 
 // ==========================================================================
-// CORE SYSTEM STORAGE SYNCS
+// REFRESH & PERSISTENCE LOAD
 // ==========================================================================
 function saveLocalState() {
     localStorage.setItem('xp_progress', currentXp);
@@ -77,7 +76,7 @@ function loadLocalState() {
 }
 
 // ==========================================================================
-// APP NAVIGATION SYSTEM
+// MAIN NAVIGATION DRIVER
 // ==========================================================================
 window.navigate = function(panelId) {
     document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
@@ -101,7 +100,7 @@ window.navigate = function(panelId) {
 };
 
 // ==========================================================================
-// THEME CORE ENGINE
+// SYSTEM LIGHT/DARK TOGGLE
 // ==========================================================================
 window.toggleThemeSystem = function() {
     const root = document.documentElement;
@@ -111,7 +110,7 @@ window.toggleThemeSystem = function() {
 };
 
 // ==========================================================================
-// AMBIENT PARTICLE BACKGROUND
+// CANVAS BACKGROUND PARTICLE SYSTEM
 // ==========================================================================
 function initAmbientBackground() {
     const canvas = document.getElementById('ambient-canvas');
@@ -136,14 +135,11 @@ function initAmbientBackground() {
 
     function loop() {
         ctx.clearRect(0, 0, w, h);
-        
-        // If secret pink mode is active, make the particles soft floating hearts/pink bubbles
         if (document.body.classList.contains('cherry-theme')) {
             ctx.fillStyle = '#ff8fa3';
         } else {
             ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim() || '#ff6b8b';
         }
-        
         ctx.globalAlpha = 0.2;
 
         particles.forEach(p => {
@@ -163,7 +159,7 @@ function initAmbientBackground() {
 }
 
 // ==========================================================================
-// PROGRESS & LEVEL CALCULATIONS
+// EXPERIENCE & TELEMETRY PROGRESSION
 // ==========================================================================
 function addSystemXp(amount) {
     currentXp += amount;
@@ -211,7 +207,7 @@ function renderSystemHudTelemetry() {
 }
 
 // ==========================================================================
-// WORKSPACE CONTROL DECK
+// CONTROL DECK WORKFLOW
 // ==========================================================================
 function renderTaskMatrixPool() {
     const container = document.getElementById('categorizedMatrixContainer');
@@ -339,7 +335,7 @@ window.addNewCustomTaskToPool = function() {
 };
 
 // ==========================================================================
-// OPERATIONAL LEDGER RENDER ENGINE
+// SAVED LEDGER RENDERING
 // ==========================================================================
 function renderSavedLedgerPanels() {
     const container = document.getElementById('savedContainer');
@@ -435,7 +431,7 @@ window.purgeOperationalLedger = function(ledgerId, event) {
 };
 
 // ==========================================================================
-// REWARDS & ACHIEVEMENTS TRACKING
+// REWARDS & ACHIEVEMENTS CONTROLLERS
 // ==========================================================================
 function renderMilestonesDashboard() {
     const grid = document.getElementById('rewardsMatrixGrid');
@@ -471,7 +467,6 @@ window.claimPlatformRewardNode = function(lvl) {
     claimedRewards.push(lvl);
     saveLocalState();
     renderMilestonesDashboard();
-    alert("Clearance successfully claimed! Check active status inside profile customizer settings.");
 };
 
 function updateAchievementsMatrix() {
@@ -506,13 +501,12 @@ function triggerAchievementUnlock(achId) {
     const match = DEFAULT_ACHIEVEMENTS.find(a => a.id === achId);
     if (match) {
         addSystemXp(match.xp);
-        alert(`🏆 Achievement Unlocked: ${match.label}\n+${match.xp} XP Awarded!`);
     }
     updateAchievementsMatrix();
 }
 
 // ==========================================================================
-// CYCLE ANALYTICS ENGINE
+// SYSTEM CYCLE METRICS
 // ==========================================================================
 window.processCycleMetrics = function() {
     const anchorInput = document.getElementById('cycleAnchor');
@@ -520,10 +514,7 @@ window.processCycleMetrics = function() {
     if (!anchorInput || !outputGrid) return;
     
     const anchorStr = anchorInput.value;
-    if (!anchorStr) {
-        alert("Please set an Anchor Matrix Date target.");
-        return;
-    }
+    if (!anchorStr) return;
 
     localStorage.setItem('cycle_anchor_date', anchorStr);
 
@@ -561,7 +552,7 @@ window.processCycleMetrics = function() {
 };
 
 // ==========================================================================
-// CINEMATIC NETFLIX ZOOM LOADING ANIMATION
+// CINEMATIC NETFLIX INTRO ZOOM
 // ==========================================================================
 window.triggerNetflixZoom = function() {
     const screen = document.getElementById('intro-screen');
@@ -576,72 +567,87 @@ window.triggerNetflixZoom = function() {
         screen.classList.add('hidden');
         container.classList.add('visible');
         
-        // If they unlocked the letter, start rendering it line-by-line right after intro ends!
+        // If the cherry intro was targeted, trigger envelope opening logic
         if (screen.classList.contains('cherry-intro')) {
-            startTypewriterLetterAnimation();
+            startEnvelopeOpeningSequence();
         }
     }, 850);
 };
 
 // ==========================================================================
-// THE SECRET 8-MONTH ANNIVERSARY SURPRISE ENGINE
+// THE SECRET 8-MONTH ANNIVERSARY GORGEOUS SURPRISE DRIVER
 // ==========================================================================
+let heartSpawningInterval = null;
+
 window.triggerSecretLetter = function() {
     const introScreen = document.getElementById('intro-screen');
     const brandText = document.getElementById('introBrandText');
     const actionBtn = document.getElementById('introActionBtn');
 
-    // 1. Trigger beautiful pastel pink layout transformation
+    // 1. Shift CSS system variables to Cherry Theme pinks
     document.body.classList.add('cherry-theme');
     
-    // 2. Hide dashboard container temporarily
+    // 2. Clear out active app views
     document.getElementById('app-container').classList.remove('visible');
     
-    // 3. Reset and custom style the intro screen for her
+    // 3. Re-inject Custom Romantic Netflix Title Cards
     introScreen.className = 'cherry-intro'; 
     brandText.innerHTML = "HAPPY 8 MONTHS";
     brandText.style.transform = "scale(1)";
     brandText.style.opacity = "1";
     actionBtn.textContent = "Open Surprise";
     
-    // Switch navigation panel to the secret pane
+    // 4. Force state to the secret panel
     window.navigate('secret');
     
-    // Clear display container content first to start fresh
+    // Reset any open states on the envelope container
+    const env = document.getElementById('envelope');
+    env.classList.remove('open');
     document.getElementById('letterTextDisplay').innerHTML = '';
 
-    // Bring the gorgeous intro card back to life
+    // Bring intro overlay back online
     introScreen.classList.remove('hidden');
+
+    // Clear any previous heart intervals and kick off brand-new floating elements
+    if (heartSpawningInterval) clearInterval(heartSpawningInterval);
+    heartSpawningInterval = setInterval(createFloatingHeartsSystem, 280);
 };
 
-function startTypewriterLetterAnimation() {
-    const container = document.getElementById('letterTextDisplay');
-    container.innerHTML = ''; // Fresh clean slate
+function startEnvelopeOpeningSequence() {
+    const env = document.getElementById('envelope');
+    const textDisplay = document.getElementById('letterTextDisplay');
     
-    // Break letter content into blocks/paragraphs
-    const lines = SECRET_LETTER_TEXT.split('\n');
+    // Smooth delay before envelope slides open
+    setTimeout(() => {
+        env.classList.add('open');
+        textDisplay.innerHTML = SECRET_LETTER_TEXT;
+    }, 600);
+}
+
+// Generate romantic floating particles
+function createFloatingHeartsSystem() {
+    const container = document.getElementById('heart-container');
+    if (!container) return;
+
+    const heartSymbols = ["❤️", "💖", "🌸", "💕", "🎀"];
+    const heart = document.createElement('div');
+    heart.className = 'heart';
+    heart.innerHTML = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
     
-    lines.forEach((lineText, index) => {
-        const lineElement = document.createElement('div');
-        lineElement.className = 'letter-line';
-        lineElement.textContent = lineText;
-        
-        // If line is empty, represent it nicely as a spacing block
-        if (lineText.trim() === '') {
-            lineElement.style.height = '1.5rem';
-        }
-        
-        container.appendChild(lineElement);
-        
-        // Stagger line reveal speeds beautifully
-        setTimeout(() => {
-            lineElement.classList.add('fade-in');
-        }, index * 1800); 
-    });
+    heart.style.left = Math.random() * 100 + 'vw';
+    // Randomize speeds
+    heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
+    
+    container.appendChild(heart);
+    
+    // Automatic cleanup
+    setTimeout(() => {
+        heart.remove();
+    }, 4000);
 }
 
 // ==========================================================================
-// MILESTONE AWARD REEEM MODAL
+// CONGRATULATION UTILITY DRAWERS
 // ==========================================================================
 function triggerMilestoneModal(level) {
     const modal = document.getElementById('congratulationsRewardModal');
@@ -660,15 +666,12 @@ window.selectRewardPathOption = function() {
     window.navigate('rewards');
 };
 
-// ==========================================================================
-// AUTHENTICATION & DISPATCH DRAWERS
-// ==========================================================================
 window.toggleAuthDrawer = function() {
     document.getElementById('authActionsDrawer').classList.toggle('hidden');
 };
 
 // ==========================================================================
-// LOCAL HOST SYSTEM INTIALIZATION ENTRYPOINT
+// SYSTEM BOOTSTRAP INITIALIZATION
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     initAmbientBackground();
