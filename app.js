@@ -567,7 +567,6 @@ window.triggerNetflixZoom = function() {
         screen.classList.add('hidden');
         container.classList.add('visible');
         
-        // If the cherry intro was targeted, trigger envelope opening logic
         if (screen.classList.contains('cherry-intro')) {
             startEnvelopeOpeningSequence();
         }
@@ -600,15 +599,12 @@ window.triggerSecretLetter = function() {
     // 4. Force state to the secret panel
     window.navigate('secret');
     
-    // Reset any open states on the envelope container
     const env = document.getElementById('envelope');
     env.classList.remove('open');
     document.getElementById('letterTextDisplay').innerHTML = '';
 
-    // Bring intro overlay back online
     introScreen.classList.remove('hidden');
 
-    // Clear any previous heart intervals and kick off brand-new floating elements
     if (heartSpawningInterval) clearInterval(heartSpawningInterval);
     heartSpawningInterval = setInterval(createFloatingHeartsSystem, 280);
 };
@@ -617,14 +613,12 @@ function startEnvelopeOpeningSequence() {
     const env = document.getElementById('envelope');
     const textDisplay = document.getElementById('letterTextDisplay');
     
-    // Smooth delay before envelope slides open
     setTimeout(() => {
         env.classList.add('open');
         textDisplay.innerHTML = SECRET_LETTER_TEXT;
     }, 600);
 }
 
-// Generate romantic floating particles
 function createFloatingHeartsSystem() {
     const container = document.getElementById('heart-container');
     if (!container) return;
@@ -635,12 +629,10 @@ function createFloatingHeartsSystem() {
     heart.innerHTML = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
     
     heart.style.left = Math.random() * 100 + 'vw';
-    // Randomize speeds
     heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
     
     container.appendChild(heart);
     
-    // Automatic cleanup
     setTimeout(() => {
         heart.remove();
     }, 4000);
