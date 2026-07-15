@@ -4,23 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enterprise Task Core</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="intro-screen">
-        <div class="intro-brand">NAVANSHI <span>CORE</span></div>
-        <button class="intro-btn" onclick="window.triggerNetflixZoom()">Initialize Matrix</button>
+        <div class="intro-brand" id="introBrandText">NAVANSHI <span>CORE</span></div>
+        <button class="intro-btn" id="introActionBtn" onclick="window.triggerNetflixZoom()">Initialize Matrix</button>
     </div>
 
     <canvas id="ambient-canvas"></canvas>
 
     <div id="app-container">
         
-        <aside>
+        <aside id="main-sidebar">
             <div class="profile-card">
                 <img id="userAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Identity Avatar">
-                <h3 id="userDisplayName">Guest Operator</h3>
+                <h3 id="userDisplayName">Navanshi</h3>
                 <p id="userAccountStatus">Offline Storage Array</p>
             </div>
             
@@ -31,6 +32,7 @@
                 <button class="nav-btn" onclick="window.navigate('biometrics')">🩸 Cycle Analytics</button>
                 <button class="nav-btn" onclick="window.navigate('achievements')">⭐ Elite Badges</button>
                 <button class="nav-btn hidden" id="navBtnCustomizer" onclick="window.navigate('customizer')">⚙️ Profile Settings</button>
+                <button class="nav-btn secret-trigger-btn" onclick="window.triggerSecretLetter()">💖 Secret</button>
             </nav>
             
             <div class="hud-zone">
@@ -44,8 +46,8 @@
             </div>
         </aside>
 
-        <main>
-            <div class="utility-header-navigation">
+        <main id="main-content-area">
+            <div class="utility-header-navigation" id="utility-nav">
                 <div class="circular-action-trigger" onclick="window.toggleThemeSystem()">🌗</div>
                 <div class="circular-action-trigger" onclick="window.toggleAuthDrawer()">👤</div>
 
@@ -160,16 +162,23 @@
                 </div>
             </div>
 
+            <div class="panel" id="panel-secret">
+                <div class="letter-layout-container">
+                    <div class="heart-icon-indicator">💝</div>
+                    <div class="cursive-letter-content" id="letterTextDisplay"></div>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <div class="mobile-dock-menu">
+    <div class="mobile-dock-menu" id="mobile-dock">
         <button class="mobile-dock-item active" onclick="window.navigate('create')"><span class="mobile-dock-icon">⚡</span>Deck</button>
         <button class="mobile-dock-item" onclick="window.navigate('saved')"><span class="mobile-dock-icon">📋</span>Ledger</button>
         <button class="mobile-dock-item" onclick="window.navigate('rewards')"><span class="mobile-dock-icon">🎁</span>Nodes</button>
         <button class="mobile-dock-item" onclick="window.navigate('biometrics')"><span class="mobile-dock-icon">🩸</span>Cycle</button>
         <button class="mobile-dock-item" onclick="window.navigate('achievements')"><span class="mobile-dock-icon">⭐</span>Badges</button>
-        <button class="mobile-dock-item hidden" id="mobileNavCustomizerBtn" onclick="window.navigate('customizer')"><span class="mobile-dock-icon">⚙️</span>Settings</button>
+        <button class="mobile-dock-item secret-trigger-btn" onclick="window.triggerSecretLetter()"><span class="mobile-dock-icon">💖</span>Secret</button>
     </div>
 
     <div class="drawer-modal-overlay" id="congratulationsRewardModal">
