@@ -1,514 +1,597 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDA9_KdWAd_QwF3c2xoRqTwHFP96LzMjMw",
-  authDomain: "routine-tracker-5ab4c.firebaseapp.com",
-  projectId: "routine-tracker-5ab4c",
-  storageBucket: "routine-tracker-5ab4c.firebasestorage.app",
-  messagingSenderId: "260352688576",
-  appId: "1:260352688576:web:5cd5023103472f833a0825",
-  measurementId: "G-Z8TQ7SE0JN"
+// ==========================================================================
+// SYSTEM PARAMETERS & POOL STRUCTURES
+// ==========================================================================
+const DEFAULT_TASK_POOL = {
+    "Vitals & Energy": [
+        { label: "High-Volume Hydration Intake (1L Base)", xp: 12 },
+        { label: "Optimal Nutrient Meal Prep Intake", xp: 15 },
+        { label: "Extended Breathwork & Cold Exposure Session", xp: 10 }
+    ],
+    "Focus & Production": [
+        { label: "Deep Focus Session (90-min Block)", xp: 25 },
+        { label: "Priority Backlog Queue Cleared", xp: 20 },
+        { label: "Strategic Review & Tomorrow Sync", xp: 12 }
+    ],
+    "Movement & Core": [
+        { label: "Structured Lift / Training Protocol", xp: 25 },
+        { label: "Zone 2 Endurance Session (45 Mins)", xp: 20 },
+        { label: "System Recovery & Stretching Routine", xp: 10 }
+    ]
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-let isRegisterMode = false;
-
-let appData = JSON.parse(localStorage.getItem('matrixDynamicDataStorageMasterV8')) || {
-    xp: 0, level: 1, savedProfiles: [], checksHistory: [], activeTheme: 'dark',
-    claimedRewards: [], customTasks: [],
-    userProfile: { name: "", username: "", age: "", date: "", weight: "", avatar: "" }
-};
-
-let internalStagedItems = [];
-let currentActiveRedeemLevelTarget = null;
-let liveSpotifyCheckInterval = null;
-let isSpotifyLinked = false;
-
-const systemicAchievementsPool = [
-    { id: 'ach_welcome', title: 'System Initialization', desc: 'Successfully build or link a database account profile container.', icon: '🛡️', requirement: (data) => true },
-    { id: 'ach_level_5', title: 'Power Ascending', desc: 'Cross beyond level metric milestone threshold level 5.', icon: '🌟', requirement: (data) => data.level >= 5 },
-    { id: 'ach_level_20', title: 'Matrix Overlord', desc: 'Cross beyond intense tracker operational milestone status level 20.', icon: '👑', requirement: (data) => data.level >= 20 },
-    { id: 'ach_profiles_3', title: 'Multi-Timeline Architect', desc: 'Commit and preserve 3 or more distinct custom tracking matrices structures.', icon: '📚', requirement: (data) => data.savedProfiles.length >= 3 }
+const DEFAULT_MILESTONES = [
+    { level: 5, rewardName: "Custom Accent Color Profile Unlocked", details: "Gain access to edit system accent variables manually inside settings." },
+    { level: 10, rewardName: "Elite Badge Custom Design Tool", details: "Create customized badges with customized hex codes and custom icons." },
+    { level: 15, rewardName: "Data Analytics Cloud Automation Pipeline", details: "Sync your analytics telemetry automatically directly to cloud buckets." },
+    { level: 20, rewardName: "Custom Font & Premium System Sound Pack", details: "Unlock custom premium system sound packages and custom dashboard fonts." }
 ];
 
-const categorizedTasksPool = {
-    morning: [
-        { id: 'm1', name: 'Waking up gently at a peaceful hour', base: 6, order: 1 },
-        { id: 'm2', name: 'Brushing teeth and morning refresh', base: 4, order: 1 },
-        { id: 'm3', name: 'Nourishing skin with a soft morning skincare routine', base: 5, order: 1 },
-        { id: 'm4', name: 'Neatly smoothing out sheets and making the bed', base: 5, order: 1 },
-        { id: 'm5', name: 'Preparing healthy breakfast fuel', base: 8, order: 1 },
-        { id: 'm6', name: 'Taking morning vitamins and clean water', base: 4, order: 1 },
-        { id: 'm7', name: 'Opening windows for fresh air and natural sunlight', base: 3, order: 1 },
-        { id: 'm8', name: 'Quick morning stretch to awaken muscular systems', base: 6, order: 1 },
-        { id: 'm9', name: 'Packing textbooks and study materials into the bag', base: 5, order: 1 },
-        { id: 'm10', name: 'Reviewing daily goals before any class begins', base: 6, order: 1 }
-    ],
-    campusLife: [
-        { id: 'cl1', name: 'Heading out safely for morning school classes', base: 12, order: 4 },
-        { id: 'cl2', name: 'Organizing locker or primary desk layout', base: 5, order: 4 },
-        { id: 'cl3', name: 'Attending school academic study blocks', base: 12, order: 4 },
-        { id: 'cl4', name: 'Participating in interactive classroom discussions', base: 8, order: 4 },
-        { id: 'cl5', name: 'Reviewing notes during short class recesses', base: 6, order: 4 },
-        { id: 'cl6', name: 'Engaging in school team projects or group work', base: 10, order: 4 },
-        { id: 'cl7', name: 'Clearing workspace after labs or practical sessions', base: 7, order: 4 },
-        { id: 'cl8', name: 'Organizing physical school handbooks and assignment sheets', base: 6, order: 4 },
-        { id: 'cl9', name: 'Returning library books back to campus counters', base: 5, order: 4 },
-        { id: 'cl10', name: 'Walking down campus corridors during intervals', base: 4, order: 4 }
-    ],
-    afternoonEvening: [
-        { id: 'ae1', name: 'Returning home from school safely', base: 8, order: 2 },
-        { id: 'ae2', name: 'Changing out of school uniform into comfortable clothes', base: 4, order: 2 },
-        { id: 'ae3', name: 'Eating a balanced afternoon lunch meal', base: 8, order: 2 },
-        { id: 'ae4', name: 'Heading to afternoon tuition sessions on time', base: 10, order: 2 },
-        { id: 'ae5', name: 'Completing core assignments and homework tasks', base: 14, order: 2 },
-        { id: 'ae6', name: 'Setting aside an extra undistracted self study block', base: 16, order: 2 },
-        { id: 'ae7', name: 'Tidying up and organizing study table workspace units', base: 6, order: 2 },
-        { id: 'ae8', name: 'Enjoying a mindful afternoon hot beverage or tea', base: 4, order: 2 },
-        { id: 'ae9', name: 'Sorting laundry or folding clean clothes items neatly', base: 5, order: 2 },
-        { id: 'ae10', name: 'Organizing study notes with highlighters and clear folders', base: 8, order: 2 }
-    ],
-    outdoorPlay: [
-        { id: 'op1', name: 'Checking in on and playing with neighborhood stray cats', base: 7, order: 5 },
-        { id: 'op2', name: 'Saying hello and feeding the street dogs', base: 7, order: 5 },
-        { id: 'op3', name: 'Stepping outside for a short grounding evening walk', base: 8, order: 5 },
-        { id: 'op4', name: 'Playing competitive football matches with team groups', base: 18, order: 5 },
-        { id: 'op5', name: 'Going outside to browse store displays at the mall', base: 14, order: 5 },
-        { id: 'op6', name: 'Running errands or gathering groceries from street markets', base: 9, order: 5 },
-        { id: 'op7', name: 'Practicing individual athletic running drills outside', base: 15, order: 5 },
-        { id: 'op8', name: 'Spending relaxing recovery intervals at an open public park', base: 10, order: 5 },
-        { id: 'op9', name: 'Biking through outdoor neighborhood paths safely', base: 16, order: 5 },
-        { id: 'op10', name: 'Taking clean captures of evening landscapes or scenery', base: 8, order: 5 }
-    ],
-    focusConnection: [
-        { id: 'fc1', name: 'Focus connection segment block one', base: 15, order: 6 },
-        { id: 'fc2', name: 'Focus connection segment block three', base: 25, order: 6 },
-        { id: 'fc4', name: 'Focus connection segment block four', base: 30, order: 6 },
-        { id: 'fc7', name: 'Focus connection segment block seven', base: 20, order: 6 },
-        { id: 'fc9', name: 'Focus connection segment block nine', base: 25, order: 6 },
-        { id: 'fc10', name: 'Focus connection segment block ten', base: 28, order: 6 }
-    ],
-    night: [
-        { id: 'n1', name: 'Brushing teeth thoroughly before evening rest cycles', base: 5, order: 3 },
-        { id: 'n2', name: 'Indulging in a calming evening skincare layout', base: 6, order: 3 },
-        { id: 'n3', name: 'Relaxing night reading block with a physical book text', base: 12, order: 3 },
-        { id: 'n4', name: 'Clearing room floor space and organizing bedroom items', base: 9, order: 3 },
-        { id: 'n5', name: 'Washing away day stress with a warm shower or bath unit', base: 8, order: 3 },
-        { id: 'n6', name: 'Setting out tomorrow clothing sets in advance layout', base: 5, order: 3 },
-        { id: 'n7', name: 'Disconnecting from all mobile screen displays before rest', base: 10, order: 3 },
-        { id: 'n8', name: 'Writing down unstructured thoughts inside a physical journal', base: 7, order: 3 },
-        { id: 'n9', name: 'Slipping into cozy sleep configuration states on time', base: 8, order: 3 },
-        { id: 'n10', name: 'Plugging in devices to charge inside alternative zones', base: 4, order: 3 },
-        { id: 'n11', name: 'Setting an alarm configuration for the subsequent day', base: 3, order: 3 },
-        { id: 'n12', name: 'Dimming bedroom layout lights down to sleep levels', base: 4, order: 3 }
-    ],
-    others: [
-        { id: 'o1', name: 'Filling up fresh water drinking containers or bottles', base: 4, order: 7 },
-        { id: 'o2', name: 'Staying beautifully hydrated consistently across daytime frames', base: 5, order: 7 },
-        { id: 'o3', name: 'Opting for structural stairs over elevator pathways', base: 6, order: 7 },
-        { id: 'o4', name: 'Taking deep breath units to alleviate internal anxiety states', base: 5, order: 7 },
-        { id: 'o5', name: 'Dusting bookshelves or bedroom window frames lightly', base: 6, order: 7 },
-        { id: 'o6', name: 'Organizing digital file structures or system storage items', base: 7, order: 7 },
-        { id: 'o7', name: 'Watering bedroom house plants or external balcony flowers', base: 5, order: 7 },
-        { id: 'o8', name: 'Listening to an inspiring or soothing complete music album', base: 4, order: 7 }
-    ],
-    custom: []
-};
+const DEFAULT_ACHIEVEMENTS = [
+    { id: "first_led", label: "First Ledger", details: "Successfully commit a new system operational ledger to memory storage.", xp: 50, unlocked: false },
+    { id: "level_five", label: "Clearance Level 5", details: "Surpass current operating parameters to clear authentication for Rank Level 5.", xp: 150, unlocked: false },
+    { id: "custom_inj", label: "Hardware Custom Injection", details: "Design and successfully inject a custom tracking block node.", xp: 50, unlocked: false },
+    { id: "completionist", label: "Execution Master", details: "Successfully execute and verify every component on any operational ledger.", xp: 200, unlocked: false }
+];
 
-function saveStateToLocal() {
-    localStorage.setItem('matrixDynamicDataStorageMasterV8', JSON.stringify(appData));
+// Local state engines
+let activeUser = null;
+let currentXp = 0;
+let currentLvl = 1;
+let currentWorkspaceQueue = [];
+let databaseRoutines = [];
+let localCustomTaskPool = JSON.parse(localStorage.getItem('customTaskPool')) || {};
+let claimedRewards = JSON.parse(localStorage.getItem('claimedRewards')) || [];
+
+// ==========================================================================
+// CORE SYSTEM STORAGE SYNCS
+// ==========================================================================
+function saveLocalState() {
+    localStorage.setItem('xp_progress', currentXp);
+    localStorage.setItem('xp_level', currentLvl);
+    localStorage.setItem('local_routines', JSON.stringify(databaseRoutines));
+    localStorage.setItem('claimedRewards', JSON.stringify(claimedRewards));
 }
 
-const canvas = document.getElementById('ambient-canvas');
-const ctx = canvas.getContext('2d');
-let particles = [];
-function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-class LiquidSpark {
-    constructor() { this.reset(); this.y = Math.random() * canvas.height; }
-    reset() { this.x = Math.random() * canvas.width; this.y = canvas.height + 20; this.size = Math.random() * 2 + 1; this.speedY = Math.random() * 0.3 + 0.1; this.alpha = Math.random() * 0.25 + 0.05; }
-    update() { this.y -= this.speedY; if (this.y < -20) this.reset(); }
-    draw() { ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = '#ff6b8b'; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
-}
-for (let i = 0; i < 30; i++) particles.push(new LiquidSpark());
-function runParticleEngine() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(runParticleEngine); }
-runParticleEngine();
-
-window.triggerNetflixZoom = function() {
-    const s = document.getElementById('intro-screen');
-    s.classList.add('hidden');
-    setTimeout(() => {
-        s.style.display = 'none';
-        document.getElementById('app-container').classList.add('visible');
-    }, 600);
-};
-
-window.toggleAuthMode = function() {
-    isRegisterMode = !isRegisterMode;
-    document.getElementById('authFormTitle').innerText = isRegisterMode ? "Create Cloud Identifier" : "Sync Core Registry";
-    document.getElementById('authSubmitBtn').innerText = isRegisterMode ? "Deploy Node" : "Authorize";
-    document.getElementById('authToggleText').innerText = isRegisterMode ? "Return to base authentication? Login" : "Request Cloud Node? Register";
-    document.getElementById('registerExtraFields').classList.toggle('hidden', !isRegisterMode);
-};
-
-window.processEmailAuth = function() {
-    const email = document.getElementById('authEmail').value.trim();
-    const password = document.getElementById('authPassword').value.trim();
-    if(!email || !password) return;
-
-    if(isRegisterMode) {
-        const username = document.getElementById('authUsername').value.trim();
-        const avatar = document.getElementById('authAvatarUrl').value.trim();
-        createUserWithEmailAndPassword(auth, email, password)
-            .then(() => {
-                appData.userProfile = { name: "Navanshi", username: username || "Navanshi_User", age: "", date: "", weight: "", avatar: avatar || "" };
-                saveStateToLocal();
-                window.toggleAuthDrawer();
-            }).catch(err => alert(err.message));
-    } else {
-        signInWithEmailAndPassword(auth, email, password)
-            .then(() => {
-                window.toggleAuthDrawer();
-            }).catch(err => alert(err.message));
-    }
-};
-
-onAuthStateChanged(auth, (user) => {
-    const formFields = document.getElementById('authFormFields');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const customizerNavBtn = document.getElementById('navBtnCustomizer');
-    const mobileCustomizerBtn = document.getElementById('mobileNavCustomizerBtn');
-    
-    if (user) {
-        if(formFields) formFields.classList.add('hidden');
-        if(logoutBtn) logoutBtn.classList.remove('hidden');
-        if(customizerNavBtn) customizerNavBtn.classList.remove('hidden');
-        if(mobileCustomizerBtn) mobileCustomizerBtn.classList.remove('hidden');
-        updateUiWithProfileData(user);
-    } else {
-        document.getElementById('userDisplayName').innerText = "Guest Operator";
-        document.getElementById('userAccountStatus').innerText = "Offline Storage Array";
-        document.getElementById('userAvatar').src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
-        if(formFields) formFields.classList.remove('hidden');
-        if(logoutBtn) logoutBtn.classList.add('hidden');
-        if(customizerNavBtn) customizerNavBtn.classList.add('hidden');
-        if(mobileCustomizerBtn) mobileCustomizerBtn.classList.add('hidden');
-    }
-    rebuildAchievementsChart();
-});
-
-function updateUiWithProfileData(userInstance = null) {
-    const savedProf = appData.userProfile || {};
-    const fallbackName = "Navanshi";
-    const fallbackAvatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
-
-    document.getElementById('userDisplayName').innerText = savedProf.name || fallbackName;
-    document.getElementById('userAccountStatus').innerText = savedProf.username ? `@${savedProf.username} • Sync Live` : "Sync Live";
-    document.getElementById('userAvatar').src = savedProf.avatar || fallbackAvatar;
-
-    if (document.getElementById('editProfName')) {
-        document.getElementById('editProfName').value = savedProf.name || fallbackName;
-        document.getElementById('editProfUsername').value = savedProf.username || "";
-        document.getElementById('editProfAge').value = savedProf.age || "";
-        document.getElementById('editProfDate').value = savedProf.date || "";
-        document.getElementById('editProfWeight').value = savedProf.weight || "";
-        document.getElementById('editProfAvatarPreview').src = savedProf.avatar || fallbackAvatar;
-    }
+function loadLocalState() {
+    currentXp = parseInt(localStorage.getItem('xp_progress')) || 0;
+    currentLvl = parseInt(localStorage.getItem('xp_level')) || 1;
+    databaseRoutines = JSON.parse(localStorage.getItem('local_routines')) || [];
+    renderSystemHudTelemetry();
 }
 
-window.saveCustomUserProfileData = function(e) {
-    if (e) e.preventDefault();
-    appData.userProfile = {
-        name: document.getElementById('editProfName').value.trim() || "Navanshi",
-        username: document.getElementById('editProfUsername').value.trim(),
-        age: document.getElementById('editProfAge').value.trim(),
-        date: document.getElementById('editProfDate').value.trim(),
-        weight: document.getElementById('editProfWeight').value.trim(),
-        avatar: document.getElementById('editProfAvatarUrl').value.trim()
-    };
-    saveStateToLocal();
-    updateUiWithProfileData(auth.currentUser);
-};
-
-window.logoutUser = function() { signOut(auth); };
-window.toggleAuthDrawer = function() { document.getElementById('authActionsDrawer').classList.toggle('hidden'); };
-
-window.connectLiveSpotify = function() {
-    if(isSpotifyLinked) {
-        clearInterval(liveSpotifyCheckInterval);
-        isSpotifyLinked = false;
-        document.getElementById('spotTrack').innerText = "Telemetry Idle";
-        document.getElementById('spotStatus').innerText = "Spotify Audio Matrix Link Inactive";
-        document.getElementById('musicXpBadge').classList.add('hidden');
-        return;
-    }
-    isSpotifyLinked = true;
-    document.getElementById('spotTrack').innerText = "Audio Core Synchronized";
-    document.getElementById('spotStatus').innerText = "Streaming Data Metrics Active";
-    document.getElementById('musicXpBadge').classList.remove('hidden');
-    liveSpotifyCheckInterval = setInterval(() => { alterXpEngine(0.2, true); }, 12000);
-};
-
-window.addNewCustomTaskToPool = function() {
-    const nameInput = document.getElementById('customTaskName');
-    const xpInput = document.getElementById('customTaskXp');
-    const taskName = nameInput.value.trim();
-    let taskXp = parseInt(xpInput.value);
-    
-    if(!taskName || isNaN(taskXp)) return;
-    taskXp = Math.max(1, Math.min(30, taskXp));
-    
-    appData.customTasks.push({ id: `cust-${Date.now()}`, name: taskName, base: taskXp, order: 7 });
-    saveStateToLocal();
-    nameInput.value = ''; xpInput.value = '';
-    buildCategorizedMatrix();
-};
-
-window.toggleThemeSystem = function() {
-    appData.activeTheme = appData.activeTheme === 'dark' ? 'light' : 'dark';
-    saveStateToLocal();
-    document.documentElement.setAttribute('data-theme', appData.activeTheme);
-};
-
+// ==========================================================================
+// APP NAVIGATION SYSTEM
+// ==========================================================================
 window.navigate = function(panelId) {
-    document.querySelectorAll('.nav-btn, .mobile-dock-item').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    
-    const desktopBtn = document.querySelector(`aside [onclick="window.navigate('${panelId}')"]`);
-    const mobileBtn = document.querySelector(`.mobile-dock-menu [onclick="window.navigate('${panelId}')"]`);
-    
-    if(desktopBtn) desktopBtn.classList.add('active');
-    if(mobileBtn) mobileBtn.classList.add('active');
-    
-    document.getElementById(`panel-${panelId}`).classList.add('active');
-    if(panelId === 'saved') rebuildSavedView();
-    if(panelId === 'rewards') rebuildRewardsChart();
-    if(panelId === 'achievements') rebuildAchievementsChart();
+    document.querySelectorAll('.panel').forEach(panel => panel.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.mobile-dock-item').forEach(btn => btn.classList.remove('active'));
+
+    const targetPanel = document.getElementById(`panel-${panelId}`);
+    if (targetPanel) targetPanel.classList.add('active');
+
+    const desktopBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => btn.getAttribute('onclick').includes(panelId));
+    if (desktopBtn) desktopBtn.classList.add('active');
+
+    const mobileBtn = Array.from(document.querySelectorAll('.mobile-dock-item')).find(btn => btn.getAttribute('onclick').includes(panelId));
+    if (mobileBtn) mobileBtn.classList.add('active');
 };
 
-function alterXpEngine(amount, isPositive) {
-    if(isPositive) {
-        if (appData.level >= 247) return;
-        appData.xp += amount;
-        while(appData.xp >= 100 && appData.level < 247) { appData.xp -= 100; appData.level++; }
-    } else {
-        appData.xp -= amount;
-        while(appData.xp < 0 && appData.level > 1) { appData.level--; appData.xp += 100; }
-    }
-    saveStateToLocal();
-    syncHud();
-    rebuildAchievementsChart();
-}
+// ==========================================================================
+// THEME CORE ENGINE
+// ==========================================================================
+window.toggleThemeSystem = function() {
+    const root = document.documentElement;
+    const currentTheme = root.getAttribute('data-theme') || 'dark';
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', nextTheme);
+};
 
-function syncHud() {
-    document.getElementById('lvlOut').innerText = appData.level;
-    document.getElementById('barOut').style.width = `${appData.xp}%`;
-}
-
-function buildCategorizedMatrix() {
-    const targetRoot = document.getElementById('categorizedMatrixContainer');
-    if(!targetRoot) return;
-    targetRoot.innerHTML = '';
-    categorizedTasksPool.custom = appData.customTasks || [];
+// ==========================================================================
+// AMBIENT PARTICLE BACKGROUND
+// ==========================================================================
+function initAmbientBackground() {
+    const canvas = document.getElementById('ambient-canvas');
+    const ctx = canvas.getContext('2d');
     
-    const sectionLabels = { morning: 'Morning Target Matrix', campusLife: 'Campus Academic Matrices', afternoonEvening: 'Tuition & Afternoon Frameworks', outdoorPlay: 'Outdoor Play & Leisure Elements', focusConnection: 'Focus Connection Matrix', night: 'Night Cycle Routines', others: 'Supplementary Elements', custom: 'Custom Created Tasks' };
+    let w = canvas.width = window.innerWidth;
+    let h = canvas.height = window.innerHeight;
+    
+    const particles = Array.from({ length: 45 }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 2.5 + 0.5,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4
+    }));
 
-    Object.keys(categorizedTasksPool).forEach(categoryKey => {
-        if(categoryKey === 'custom' && categorizedTasksPool.custom.length === 0) return;
-        
-        const wrapper = document.createElement('div');
-        wrapper.className = 'category-group-wrapper';
-        wrapper.innerHTML = `<div class="category-header-title">${sectionLabels[categoryKey]}</div>`;
+    window.addEventListener('resize', () => {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+    });
 
-        categorizedTasksPool[categoryKey].forEach(task => {
-            const count = internalStagedItems.filter(item => item.id === task.id).length;
-            const card = document.createElement('div');
-            card.className = 'matrix-interactive-row';
-            card.innerHTML = `
-                <div class="row-meta-info">${task.name} <span>+${task.base} XP RATING</span></div>
+    function loop() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim() || '#ff6b8b';
+        ctx.globalAlpha = 0.15;
+
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.x < 0 || p.x > w) p.vx *= -1;
+            if (p.y < 0 || p.y > h) p.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        ctx.globalAlpha = 1.0;
+        requestAnimationFrame(loop);
+    }
+    loop();
+}
+
+// ==========================================================================
+// PROGRESS & LEVEL CALCULATIONS
+// ==========================================================================
+function addSystemXp(amount) {
+    currentXp += amount;
+    const oldLevel = currentLvl;
+    
+    // Level boundary curve formula
+    let calculatedLevel = 1;
+    let xpTarget = 100;
+    let tempXp = currentXp;
+
+    while (tempXp >= xpTarget) {
+        tempXp -= xpTarget;
+        calculatedLevel++;
+        xpTarget = Math.floor(100 * Math.pow(1.15, calculatedLevel - 1));
+    }
+
+    currentLvl = calculatedLevel;
+    saveLocalState();
+    renderSystemHudTelemetry();
+
+    if (currentLvl > oldLevel) {
+        triggerMilestoneModal(currentLvl);
+    }
+}
+
+function renderSystemHudTelemetry() {
+    let xpTarget = 100;
+    let tempXp = currentXp;
+    let calculatedLevel = 1;
+
+    while (tempXp >= xpTarget) {
+        tempXp -= xpTarget;
+        calculatedLevel++;
+        xpTarget = Math.floor(100 * Math.pow(1.15, calculatedLevel - 1));
+    }
+
+    const percentage = (tempXp / xpTarget) * 100;
+    
+    document.getElementById('lvlOut').textContent = currentLvl;
+    document.getElementById('barOut').style.width = `${percentage}%`;
+    
+    renderMilestonesDashboard();
+    updateAchievementsMatrix();
+}
+
+// ==========================================================================
+// WORKSPACE CONTROL DECK
+// ==========================================================================
+function renderTaskMatrixPool() {
+    const container = document.getElementById('categorizedMatrixContainer');
+    container.innerHTML = '';
+
+    const combinedPool = { ...DEFAULT_TASK_POOL };
+    Object.keys(localCustomTaskPool).forEach(cat => {
+        if (!combinedPool[cat]) combinedPool[cat] = [];
+        combinedPool[cat] = [...combinedPool[cat], ...localCustomTaskPool[cat]];
+    });
+
+    Object.entries(combinedPool).forEach(([categoryName, tasks]) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'category-group-wrapper';
+        wrap.innerHTML = `<div class="category-header-title">${categoryName}</div>`;
+
+        tasks.forEach(task => {
+            const row = document.createElement('div');
+            row.className = 'matrix-interactive-row';
+            
+            // Generate count label representation
+            const currentQueueCount = currentWorkspaceQueue.filter(t => t.label === task.label).length;
+
+            row.innerHTML = `
+                <div class="row-meta-info">${task.label} <span>+${task.xp} XP</span></div>
                 <div class="counter-pill">
-                    <button class="counter-btn" onclick="window.modifyTaskDirectly('${task.id}', '${categoryKey}', -1)">−</button>
-                    <span class="counter-lbl" id="cartVal-${task.id}">${count}</span>
-                    <button class="counter-btn" onclick="window.modifyTaskDirectly('${task.id}', '${categoryKey}', 1)">+</button>
+                    <button class="counter-btn" onclick="window.adjustQueueAmount('${encodeURIComponent(task.label)}', ${task.xp}, -1)">-</button>
+                    <div class="counter-lbl">${currentQueueCount}</div>
+                    <button class="counter-btn" onclick="window.adjustQueueAmount('${encodeURIComponent(task.label)}', ${task.xp}, 1)">+</button>
                 </div>
             `;
-            wrapper.appendChild(card);
+            wrap.appendChild(row);
         });
-        targetRoot.appendChild(wrapper);
+
+        container.appendChild(wrap);
     });
 }
 
-window.modifyTaskDirectly = function(taskId, categoryKey, step) {
-    const referenceTask = categorizedTasksPool[categoryKey].find(t => t.id === taskId);
-    if (step === 1) {
-        internalStagedItems.push({ id: taskId, name: `${referenceTask.name}`, xp: referenceTask.base, order: referenceTask.order });
+window.adjustQueueAmount = function(taskLabelEncoded, xpVal, delta) {
+    const label = decodeURIComponent(taskLabelEncoded);
+    if (delta > 0) {
+        currentWorkspaceQueue.push({ label, xp: xpVal });
     } else {
-        for (let i = internalStagedItems.length - 1; i >= 0; i--) { if (internalStagedItems[i].id === taskId) { internalStagedItems.splice(i, 1); break; } }
+        const idx = currentWorkspaceQueue.findIndex(item => item.label === label);
+        if (idx !== -1) currentWorkspaceQueue.splice(idx, 1);
     }
-    document.getElementById(`cartVal-${taskId}`).innerText = internalStagedItems.filter(i => i.id === taskId).length;
-    refreshStagedReviewList();
+    renderTaskMatrixPool();
+    renderQueueReviewList();
 };
 
-function refreshStagedReviewList() {
-    const target = document.getElementById('stagedReview'); if(!target) return;
-    target.innerHTML = '';
-    if (internalStagedItems.length === 0) { target.innerHTML = '<p style="padding:4px; color:var(--text-secondary); margin:0;">Queue deployment pipeline empty.</p>'; return; }
-    internalStagedItems.forEach(item => {
-        const div = document.createElement('div'); div.className = 'queue-item-strip'; div.innerHTML = `${item.name}`; target.appendChild(div);
+function renderQueueReviewList() {
+    const container = document.getElementById('stagedReview');
+    container.innerHTML = '';
+
+    if (currentWorkspaceQueue.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 24px; color:var(--text-secondary); font-size:0.95rem;">Queue is empty. Select modules.</div>`;
+        return;
+    }
+
+    // Display simplified summary of selected elements
+    const grouped = {};
+    currentWorkspaceQueue.forEach(item => {
+        grouped[item.label] = (grouped[item.label] || 0) + 1;
+    });
+
+    Object.entries(grouped).forEach(([lbl, count]) => {
+        const div = document.createElement('div');
+        div.className = 'queue-item-strip';
+        div.textContent = `x${count} — ${lbl}`;
+        container.appendChild(div);
     });
 }
 
 window.commitRoutineString = function() {
     const titleInput = document.getElementById('registryTitle');
-    const name = titleInput.value.trim();
-    if(!name || internalStagedItems.length === 0) return;
-    internalStagedItems.forEach((t, i) => t.instanceId = `inst-${t.id}-${i}-${Date.now()}`);
-    appData.savedProfiles.push({ id: 'profile-' + Date.now(), title: name, payload: [...internalStagedItems] });
-    saveStateToLocal();
-    titleInput.value = ''; internalStagedItems = []; refreshStagedReviewList(); buildCategorizedMatrix();
-    rebuildAchievementsChart();
+    const title = titleInput.value.trim() || `Operational Ledger #${databaseRoutines.length + 1}`;
+
+    if (currentWorkspaceQueue.length === 0) {
+        alert("Select at least one workspace element first.");
+        return;
+    }
+
+    const newLedger = {
+        id: 'ledger_' + Date.now(),
+        title: title,
+        timestamp: new Date().toISOString(),
+        tasks: currentWorkspaceQueue.map(item => ({ ...item, done: false }))
+    };
+
+    databaseRoutines.unshift(newLedger);
+    saveLocalState();
+    
+    // Clear Workspace Input Controls
+    currentWorkspaceQueue = [];
+    titleInput.value = '';
+    
+    renderTaskMatrixPool();
+    renderQueueReviewList();
+    renderSavedLedgerPanels();
+    
+    // Auto Navigate to Ledgers and Trigger Achievement Checks
+    window.navigate('saved');
+    triggerAchievementUnlock("first_led");
 };
 
-function rebuildSavedView() {
-    const container = document.getElementById('savedContainer'); if(!container) return;
-    container.innerHTML = appData.savedProfiles.length === 0 ? '<p style="color:var(--text-secondary); padding: 20px 0;">No active layout timelines preserved.</p>' : '';
+window.addNewCustomTaskToPool = function() {
+    const nameInp = document.getElementById('customTaskName');
+    const xpInp = document.getElementById('customTaskXp');
+    
+    const name = nameInp.value.trim();
+    const xp = Math.min(30, parseInt(xpInp.value) || 10);
 
-    appData.savedProfiles.forEach(profile => {
-        const bar = document.createElement('div');
-        bar.className = 'timeline-card-wrapper';
-        bar.innerHTML = `
-            <div class="timeline-card-header">
-                <span>${profile.title}</span>
-                <button class="node-trigger-btn" style="color:#ff4757; border-color: rgba(255,71,87,0.2); width:auto; padding:8px 16px;" onclick="window.deleteWholeProfile(event, '${profile.id}')">Drop Matrix</button>
+    if (!name) return;
+
+    if (!localCustomTaskPool["User Custom Modules"]) {
+        localCustomTaskPool["User Custom Modules"] = [];
+    }
+
+    localCustomTaskPool["User Custom Modules"].push({ label: name, xp: xp });
+    localStorage.setItem('customTaskPool', JSON.stringify(localCustomTaskPool));
+
+    nameInp.value = '';
+    xpInp.value = '';
+
+    renderTaskMatrixPool();
+    triggerAchievementUnlock("custom_inj");
+};
+
+// ==========================================================================
+// OPERATIONAL LEDGER RENDER ENGINE
+// ==========================================================================
+function renderSavedLedgerPanels() {
+    const container = document.getElementById('savedContainer');
+    container.innerHTML = '';
+
+    if (databaseRoutines.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 48px; color:var(--text-secondary); font-weight:700;">No active operational ledgers found. Design one in the Control Deck.</div>`;
+        return;
+    }
+
+    databaseRoutines.forEach(ledger => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'timeline-card-wrapper';
+
+        const totalTasks = ledger.tasks.length;
+        const doneTasks = ledger.tasks.filter(t => t.done).length;
+        const completePercent = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+
+        const header = document.createElement('div');
+        header.className = 'timeline-card-header';
+        header.innerHTML = `
+            <div>
+                <span style="font-size:1.15rem; display:block; font-weight:800;">${ledger.title}</span>
+                <span style="font-size:0.8rem; color:var(--text-secondary); font-weight:500;">Deployed: ${new Date(ledger.timestamp).toLocaleString()}</span>
             </div>
-            <div class="timeline-card-body-accordion" id="accordion-${profile.id}">
-                <div class="sub-timeline-section"><div class="sub-timeline-title">Morning Target Deck</div><div style="display:flex; flex-direction:column; gap:12px;" id="ledger-morning-${profile.id}"></div></div>
-                <div class="sub-timeline-section"><div class="sub-timeline-title">Midday & Core Execution</div><div style="display:flex; flex-direction:column; gap:12px;" id="ledger-midday-${profile.id}"></div></div>
-                <div class="sub-timeline-section"><div class="sub-timeline-title">Night Terminal Sequence</div><div style="display:flex; flex-direction:column; gap:12px;" id="ledger-night-${profile.id}"></div></div>
+            <div style="display:flex; align-items:center; gap:16px;">
+                <span style="color:var(--accent-glow); font-size:1.1rem; font-weight:900;">${completePercent}%</span>
+                <button onclick="window.purgeOperationalLedger('${ledger.id}', event)" style="background:none; border:none; cursor:pointer; font-size:1.3rem;">🗑️</button>
             </div>
         `;
 
-        bar.querySelector('.timeline-card-header').addEventListener('click', (e) => {
-            if(e.target.tagName === 'BUTTON') return;
-            document.getElementById(`accordion-${profile.id}`).classList.toggle('open');
+        const body = document.createElement('div');
+        body.className = 'timeline-card-body-accordion';
+
+        // Set up interactive accordion event listner
+        header.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') return;
+            body.classList.toggle('open');
         });
 
-        const ledgers = { morning: bar.querySelector(`#ledger-morning-${profile.id}`), midday: bar.querySelector(`#ledger-midday-${profile.id}`), night: bar.querySelector(`#ledger-night-${profile.id}`) };
+        const listWrap = document.createElement('div');
+        listWrap.className = 'sub-timeline-section';
 
-        profile.payload.forEach(task => {
-            const trackingId = `${profile.id}-${task.instanceId}`;
-            const isCompleted = appData.checksHistory.includes(trackingId);
+        ledger.tasks.forEach((task, index) => {
             const row = document.createElement('div');
-            row.className = `interactive-task-row ${isCompleted ? 'checked' : ''}`;
+            row.className = `interactive-task-row ${task.done ? 'checked' : ''}`;
             row.innerHTML = `
-                <div class="premium-checkbox-wrapper"><input type="checkbox" ${isCompleted ? 'checked' : ''}><span>${task.name}</span></div>
-                <button style="background:none; border:none; color:#ff4757; font-size:1.4rem; cursor:pointer;" onclick="window.removeSingleTaskInline(event, '${profile.id}', '${task.instanceId}', ${task.xp})">&times;</button>
+                <div class="premium-checkbox-wrapper">
+                    <input type="checkbox" ${task.done ? 'checked' : ''} onchange="window.toggleTaskItemStatus('${ledger.id}', ${index})">
+                    <span>${task.label}</span>
+                </div>
+                <div style="font-weight:900; font-size:0.95rem; color:var(--accent-glow);">+${task.xp} XP</div>
             `;
-
-            row.addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON') return;
-                const checkBox = row.querySelector('input');
-                const checkState = !row.classList.contains('checked');
-                
-                if (checkState) {
-                    row.classList.add('checked'); checkBox.checked = true;
-                    appData.checksHistory.push(trackingId); alterXpEngine(task.xp, true);
-                } else {
-                    row.classList.remove('checked'); checkBox.checked = false;
-                    appData.checksHistory = appData.checksHistory.filter(id => id !== trackingId); alterXpEngine(task.xp, false);
-                }
-            });
-
-            if (task.order === 1) ledgers.morning.appendChild(row);
-            else if ([2,4,5,7].includes(task.order)) ledgers.midday.appendChild(row);
-            else ledgers.night.appendChild(row);
+            listWrap.appendChild(row);
         });
-        container.appendChild(bar);
+
+        body.appendChild(listWrap);
+        wrapper.appendChild(header);
+        wrapper.appendChild(body);
+        container.appendChild(wrapper);
     });
 }
 
-window.removeSingleTaskInline = function(e, profileId, instanceId, xp) {
-    e.stopPropagation();
-    const profile = appData.savedProfiles.find(p => p.id === profileId);
-    if(profile) {
-        const trackingId = `${profileId}-${instanceId}`;
-        if (appData.checksHistory.includes(trackingId)) { appData.checksHistory = appData.checksHistory.filter(id => id !== trackingId); alterXpEngine(xp, false); }
-        profile.payload = profile.payload.filter(t => t.instanceId !== instanceId);
-        saveStateToLocal(); rebuildSavedView();
+window.toggleTaskItemStatus = function(ledgerId, taskIndex) {
+    const ledger = databaseRoutines.find(l => l.id === ledgerId);
+    if (!ledger) return;
+
+    const task = ledger.tasks[taskIndex];
+    task.done = !task.done;
+
+    if (task.done) {
+        addSystemXp(task.xp);
+    } else {
+        addSystemXp(-task.xp);
+    }
+
+    saveLocalState();
+    renderSavedLedgerPanels();
+
+    // Check achievement metrics on state alterations
+    const isAllComplete = ledger.tasks.every(t => t.done);
+    if (isAllComplete) {
+        triggerAchievementUnlock("completionist");
     }
 };
 
-window.deleteWholeProfile = function(e, profileId) {
-    e.stopPropagation();
-    appData.savedProfiles = appData.savedProfiles.filter(p => p.id !== profileId);
-    saveStateToLocal(); rebuildSavedView();
-    rebuildAchievementsChart();
+window.purgeOperationalLedger = function(ledgerId, event) {
+    event.stopPropagation();
+    if (!confirm("Confirm complete ledger database removal?")) return;
+    
+    databaseRoutines = databaseRoutines.filter(l => l.id !== ledgerId);
+    saveLocalState();
+    renderSavedLedgerPanels();
 };
 
-function rebuildRewardsChart() {
-    const grid = document.getElementById('rewardsMatrixGrid'); if(!grid) return;
+// ==========================================================================
+// REWARDS & ACHIEVEMENTS TRACKING
+// ==========================================================================
+function renderMilestonesDashboard() {
+    const grid = document.getElementById('rewardsMatrixGrid');
     grid.innerHTML = '';
-    for(let i = 1; i <= 50; i++) {
-        const isUnlocked = appData.level >= i;
-        const isClaimed = appData.claimedRewards.includes(i);
-        const card = document.createElement('div');
-        card.className = `reward-node-card ${isUnlocked && !isClaimed ? 'claimable' : ''} ${isClaimed ? 'claimed' : ''}`;
-        card.innerHTML = `<div class="node-tier-title">RANK LEVEL ${i}</div><button class="node-trigger-btn" onclick="window.openCongratulationsModal(${i})">${isClaimed ? 'Claim Secure ✓' : 'Verify Node'}</button>`;
-        grid.appendChild(card);
-    }
-}
 
-function rebuildAchievementsChart() {
-    const grid = document.getElementById('achievementsMatrixGrid'); if(!grid) return;
-    grid.innerHTML = '';
-    systemicAchievementsPool.forEach(ach => {
-        const hasUnlocked = ach.requirement(appData);
+    DEFAULT_MILESTONES.forEach(m => {
+        const isLevelMet = currentLvl >= m.level;
+        const isClaimed = claimedRewards.includes(m.level);
+        
         const card = document.createElement('div');
-        card.className = `achievement-node-card ${hasUnlocked ? 'unlocked' : ''}`;
-        card.innerHTML = `<div class="badge-avatar-icon">${ach.icon}</div><div style="font-weight:800; font-size:1.1rem;">${ach.title}</div><p style="margin:0; font-size:0.85rem; color:var(--text-secondary); line-height:1.5;">${ach.desc}</p>`;
+        card.className = `reward-node-card ${isLevelMet && !isClaimed ? 'claimable' : ''} ${isClaimed ? 'claimed' : ''}`;
+
+        let actionBtnText = "Locked Node";
+        if (isClaimed) {
+            actionBtnText = "Node Claimed";
+        } else if (isLevelMet) {
+            actionBtnText = "Claim Clearance";
+        }
+
+        card.innerHTML = `
+            <div class="node-tier-title">LEVEL ${m.level}</div>
+            <div style="font-weight:700; font-size:1.15rem;">${m.rewardName}</div>
+            <p style="margin:0; font-size:0.85rem; color:var(--text-secondary); line-height:1.4;">${m.details}</p>
+            <button class="node-trigger-btn" ${!isLevelMet || isClaimed ? 'disabled' : ''} onclick="window.claimPlatformRewardNode(${m.level})">${actionBtnText}</button>
+        `;
         grid.appendChild(card);
     });
 }
 
-window.openCongratulationsModal = function(level) {
-    if(appData.level < level || appData.claimedRewards.includes(level)) return;
-    currentActiveRedeemLevelTarget = level;
-    document.getElementById('rewardMilestoneLevelText').innerText = level;
-    document.getElementById('congratulationsRewardModal').classList.add('open');
+window.claimPlatformRewardNode = function(lvl) {
+    if (claimedRewards.includes(lvl)) return;
+    claimedRewards.push(lvl);
+    saveLocalState();
+    renderMilestonesDashboard();
+    alert("Clearance successfully claimed! Check active status inside profile customizer settings.");
 };
+
+function updateAchievementsMatrix() {
+    const grid = document.getElementById('achievementsMatrixGrid');
+    grid.innerHTML = '';
+
+    const localUnlockedStatus = JSON.parse(localStorage.getItem('unlockedAchievements')) || [];
+
+    DEFAULT_ACHIEVEMENTS.forEach(ach => {
+        const isUnlocked = localUnlockedStatus.includes(ach.id);
+        const card = document.createElement('div');
+        card.className = `achievement-node-card ${isUnlocked ? 'unlocked' : ''}`;
+        
+        card.innerHTML = `
+            <div class="badge-avatar-icon">💎</div>
+            <div style="font-weight:900; font-size:1.25rem;">${ach.label}</div>
+            <p style="margin:0; font-size:0.85rem; color:var(--text-secondary); line-height:1.4;">${ach.details}</p>
+            <div style="font-size:0.8rem; font-weight:800; color:var(--accent-glow); text-transform:uppercase;">Reward: +${ach.xp} XP</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function triggerAchievementUnlock(achId) {
+    const localUnlockedStatus = JSON.parse(localStorage.getItem('unlockedAchievements')) || [];
+    if (localUnlockedStatus.includes(achId)) return;
+
+    localUnlockedStatus.push(achId);
+    localStorage.setItem('unlockedAchievements', JSON.stringify(localUnlockedStatus));
+
+    const match = DEFAULT_ACHIEVEMENTS.find(a => a.id === achId);
+    if (match) {
+        addSystemXp(match.xp);
+        alert(`🏆 Achievement Unlocked: ${match.label}\n+${match.xp} XP Awarded!`);
+    }
+    updateAchievementsMatrix();
+}
+
+// ==========================================================================
+// CYCLE ANALYTICS ENGINE
+// ==========================================================================
+window.processCycleMetrics = function() {
+    const anchorInput = document.getElementById('cycleAnchor');
+    const outputGrid = document.getElementById('cycleOutputDashboard');
+    
+    const anchorStr = anchorInput.value;
+    if (!anchorStr) {
+        alert("Please set an Anchor Matrix Date target.");
+        return;
+    }
+
+    localStorage.setItem('cycle_anchor_date', anchorStr);
+
+    const anchorDate = new Date(anchorStr);
+    const today = new Date();
+    
+    const timeDiff = today - anchorDate;
+    const diffDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    
+    // Cycle calculations based on standard cycle durations
+    const cycleLength = 28;
+    const currentDay = ((diffDays % cycleLength) + cycleLength) % cycleLength || 28;
+
+    outputGrid.innerHTML = '';
+
+    const phaseConfig = [
+        { title: "Menstrual Phase (Day 1-5)", desc: "Priority: Recovery, restorative work, low intensity load models.", range: [1, 5] },
+        { title: "Follicular Phase (Day 6-12)", desc: "Priority: High-volume output, new workspace structural implementation.", range: [6, 12] },
+        { title: "Ovulatory Phase (Day 13-17)", desc: "Priority: Peak strength parameters, maximum focus blocks.", range: [13, 17] },
+        { title: "Luteal Phase (Day 18-28)", desc: "Priority: Aerobic capacity adaptation, endurance progression grids.", range: [18, 28] }
+    ];
+
+    phaseConfig.forEach(p => {
+        const isActive = currentDay >= p.range[0] && currentDay <= p.range[1];
+        const card = document.createElement('div');
+        card.className = `cycle-data-card ${isActive ? 'active-phase' : ''}`;
+        card.innerHTML = `
+            <div style="font-weight:900; font-size:1.25rem; margin-bottom:8px;">${p.title}</div>
+            <p style="margin:0 0 16px 0; font-size:0.9rem; color:var(--text-secondary); line-height:1.4;">${p.desc}</p>
+            <div style="font-weight:800; font-size:0.8rem; color:${isActive ? 'var(--accent-glow)' : 'var(--text-secondary)'}; text-transform:uppercase;">
+                ${isActive ? '🔴 ACTIVE INTERNAL HORMONAL BIOMETRIC STATE' : 'STANDBY PHASE STATUS'}
+            </div>
+        `;
+        outputGrid.appendChild(card);
+    });
+};
+
+// ==========================================================================
+// CINEMATIC NETFLIX ZOOM LOADING ANIMATION
+// ==========================================================================
+window.triggerNetflixZoom = function() {
+    const screen = document.getElementById('intro-screen');
+    const brand = document.querySelector('.intro-brand');
+    const container = document.getElementById('app-container');
+
+    // Smooth transition steps
+    brand.style.transition = "transform 0.9s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.8s ease";
+    brand.style.transform = "scale(8)";
+    brand.style.opacity = "0";
+
+    setTimeout(() => {
+        screen.classList.add('hidden');
+        container.classList.add('visible');
+    }, 850);
+};
+
+// ==========================================================================
+// MILESTONE AWARD REEEM MODAL
+// ==========================================================================
+function triggerMilestoneModal(level) {
+    const modal = document.getElementById('congratulationsRewardModal');
+    const lvlText = document.getElementById('rewardMilestoneLevelText');
+    
+    lvlText.textContent = level;
+    modal.classList.add('open');
+
+    // Trigger milestone check tracking logic
+    if (level >= 5) {
+        triggerAchievementUnlock("level_five");
+    }
+}
 
 window.selectRewardPathOption = function() {
-    if (!currentActiveRedeemLevelTarget) return;
-    appData.claimedRewards.push(currentActiveRedeemLevelTarget);
-    saveStateToLocal();
     document.getElementById('congratulationsRewardModal').classList.remove('open');
-    rebuildRewardsChart();
+    window.navigate('rewards');
 };
 
-window.processCycleMetrics = function() {
-    const val = document.getElementById('cycleAnchor').value; if(!val) return;
-    localStorage.setItem('luxuryCycleDateDarkThemeV6', val); parseCalculatedCycle(val);
+// ==========================================================================
+// AUTHENTICATION & DISPATCH DRAWERS
+// ==========================================================================
+window.toggleAuthDrawer = function() {
+    document.getElementById('authActionsDrawer').classList.toggle('hidden');
 };
 
-function parseCalculatedCycle(initStr) {
-    const activeDay = Math.floor((new Date() - new Date(initStr)) / (1000 * 60 * 60 * 24)) % 28 + 1;
-    const phases = [ { title: 'Menstrual Phase', start: 1, end: 7, desc: 'Days 1-7: System renewal active.' }, { title: 'Follicular Phase', start: 8, end: 13, desc: 'Days 8-13: Estrogen levels ascending.' }, { title: 'Ovulatory Phase', start: 14, end: 15, desc: 'Days 14-15: Structural energy peak.' }, { title: 'Luteal Phase', start: 16, end: 28, desc: 'Days 16-28: Progesterone transition.' } ];
-    const target = document.getElementById('cycleOutputDashboard'); if(!target) return;
-    target.innerHTML = '';
-    phases.forEach(p => {
-        const active = activeDay >= p.start && activeDay <= p.end;
-        const block = document.createElement('div'); block.className = `cycle-data-card ${active ? 'active-phase' : ''}`;
-        block.innerHTML = `<div style="font-weight:800; font-size:1.1rem;">${p.title}</div><p style="font-size:0.9rem; margin:10px 0; line-height:1.5; color:var(--text-secondary);">${p.desc}</p>${active ? `<span style='color:var(--accent-glow); font-weight:900; font-size:0.95rem;'>Current Cycle Day: ${activeDay}</span>`:''}`;
-        target.appendChild(block);
-    });
-}
+// ==========================================================================
+// LOCAL HOST SYSTEM INTIALIZATION ENTRYPOINT
+// ==========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    initAmbientBackground();
+    loadLocalState();
+    
+    // Core workspace setups
+    renderTaskMatrixPool();
+    renderQueueReviewList();
+    renderSavedLedgerPanels();
 
-document.documentElement.setAttribute('data-theme', appData.activeTheme);
-syncHud(); buildCategorizedMatrix(); refreshStagedReviewList();
-const fallbackCycle = localStorage.getItem('luxuryCycleDateDarkThemeV6');
-if(fallbackCycle) { document.getElementById('cycleAnchor').value = fallbackCycle; parseCalculatedCycle(fallbackCycle); }
+    // Default dates for cycle setups
+    const storedDate = localStorage.getItem('cycle_anchor_date');
+    if (storedDate) {
+        document.getElementById('cycleAnchor').value = storedDate;
+        window.processCycleMetrics();
+    }
+});
