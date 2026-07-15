@@ -160,7 +160,6 @@ aside {
     height: 100vh; 
 }
 
-/* Sidebar Cherry pink overrides */
 body.cherry-theme aside {
     background: rgba(255, 240, 243, 0.8) !important;
 }
@@ -226,7 +225,6 @@ body.cherry-theme aside {
     transform: translateX(4px); 
 }
 
-/* Unique pulsing style for the Secret button */
 .secret-trigger-btn {
     border: 1px dashed var(--accent-glow);
     animation: heartPulse 2s infinite alternate;
@@ -241,7 +239,6 @@ body.cherry-theme aside {
     display: none !important; 
 }
 
-/* HUD System Telemetry */
 .hud-zone { 
     background: rgba(0, 0, 0, 0.2); 
     border: 1px solid var(--border-glass); 
@@ -732,7 +729,7 @@ main {
 }
 
 /* ==========================================================================
-   THE ULTRA-PREMIUM 3D ENVELOPE OPENING ANIMATION
+   THE ULTRA-PREMIUM 3D ENVELOPE OPENING ANIMATION (PRECISELY CENTERED)
    ========================================================================== */
 .envelope-wrapper {
     height: 480px;
@@ -741,6 +738,7 @@ main {
     justify-content: center;
     align-items: center;
     perspective: 1200px;
+    position: relative;
 }
 
 .envelope {
@@ -781,16 +779,16 @@ main {
 .letter {
     position: absolute;
     bottom: 10px;
+    left: 10px;
     width: 300px;
     height: 190px;
     background: #ffffff;
-    margin: 0 10px;
     border-radius: 8px;
     z-index: 1;
+    /* Precise Centering Logic via Translate3d & Scale */
     transition: transform 0.8s 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
                 width 0.8s 1s cubic-bezier(0.25, 1, 0.5, 1), 
-                height 0.8s 1s cubic-bezier(0.25, 1, 0.5, 1), 
-                margin-left 0.8s 1s cubic-bezier(0.25, 1, 0.5, 1);
+                height 0.8s 1s cubic-bezier(0.25, 1, 0.5, 1);
     padding: 30px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     overflow-y: auto;
@@ -798,7 +796,7 @@ main {
 }
 
 /* ==========================================================================
-   ENVELOPE OPEN STATE
+   ENVELOPE OPEN STATE (RE-CENTERED MATRIX)
    ========================================================================== */
 .envelope-wrapper.open .flap {
     transform: rotateX(180deg);
@@ -806,13 +804,15 @@ main {
     z-index: 0;
 }
 
+/* Slides perfectly up and scales to screen center */
 .envelope-wrapper.open .letter {
-    transform: translateY(-280px); /* Lift out */
-    height: 520px;                  /* Stretch out */
-    width: 640px;                   /* Max out space */
-    margin-left: -160px;            /* Re-center widescreen sizing */
+    transform: translate3d(0, -180px, 100px);
+    height: 520px;
+    width: 640px;
+    /* Negative margin pulls the wider container perfectly centered horizontally */
+    margin-left: -160px; 
     z-index: 10;
-    box-shadow: 0 20px 50px rgba(255, 77, 109, 0.2);
+    box-shadow: 0 20px 50px rgba(255, 77, 109, 0.35);
 }
 
 .letter-content {
@@ -857,9 +857,7 @@ main {
     }
 }
 
-/* ==========================================================================
-   RESPONSIVENESS AND DISPLAY FIXES
-   ========================================================================== */
+/* Responsive adjustments to maintain center alignment on mobile */
 @media (max-width: 1120px) {
     #app-container { flex-direction: column; }
     aside { display: none; }
@@ -867,14 +865,23 @@ main {
     main { padding: 40px 24px 140px 24px; gap: 32px; }
     .workspace-split-view { grid-template-columns: 1fr; }
     
-    /* Responsive adjustment for Mobile Letter sizes */
     .envelope-wrapper.open .letter {
-        width: 90vw;
-        margin-left: -150px;
-        height: 480px;
-        transform: translateY(-260px);
+        width: 85vw;
+        max-width: 450px;
+        /* Dynamic responsive margin offsets to keep letter centered */
+        margin-left: calc(-85vw / 2 + 150px);
+        height: 440px;
+        transform: translate3d(0, -160px, 50px);
     }
+    
+    /* Ensure smaller screens keep center calculation clean */
+    @media (max-width: 500px) {
+        .envelope-wrapper.open .letter {
+            margin-left: calc(-85vw / 2 + 140px);
+        }
+    }
+    
     .letter-content {
-        font-size: 1.35rem;
+        font-size: 1.25rem;
     }
 }
