@@ -33,6 +33,23 @@ const DEFAULT_ACHIEVEMENTS = [
     { id: "completionist", label: "Execution Master", details: "Successfully execute and verify every component on any operational ledger.", xp: 200, unlocked: false }
 ];
 
+// ROMANTIC LOVE LETTER DATA MATRIX
+const SECRET_LETTER_TEXT = `Hey,
+
+I know it started eight months ago. But during those eight months, you have become someone irreplaceable in my life. I cannot replace you even if I wanted to. I love you a lot. 
+
+I just want to tell you that the letter I wrote is not AI, and it was never AI. I wrote it, but if you think it's AI, I wanna say everything I want to with my words. Like, I'm speaking this out, but, you know, the Google keyboard is typing it. 
+
+If you don't feel like you're not loved, I just want you to remember that everything I do is for you. For you to feel better. And no, I don't want to replace you. I don't want to look for someone else because I love you. I want to be with you, forever. And it's my choice to be with you. I have chosen you for life. I hope you have done the same. 
+
+I don't know how your mind is working right now, but I'm trying to imprint myself as much as I can. And yeah, I will keep trying. And I, I don't know that you know that I care a lot for you. Because I really do try a lot. And yeah. 
+
+I'm sorry for not being the streamer, especially, but I'll try my best, okay? 
+
+I love you. Bye-bye.
+
+Happy eight months, baby. ❤️`;
+
 // Local state engines
 let activeUser = null;
 let currentXp = 0;
@@ -70,10 +87,16 @@ window.navigate = function(panelId) {
     const targetPanel = document.getElementById(`panel-${panelId}`);
     if (targetPanel) targetPanel.classList.add('active');
 
-    const desktopBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => btn.getAttribute('onclick').includes(panelId));
+    const desktopBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => {
+        const attr = btn.getAttribute('onclick');
+        return attr && attr.includes(panelId);
+    });
     if (desktopBtn) desktopBtn.classList.add('active');
 
-    const mobileBtn = Array.from(document.querySelectorAll('.mobile-dock-item')).find(btn => btn.getAttribute('onclick').includes(panelId));
+    const mobileBtn = Array.from(document.querySelectorAll('.mobile-dock-item')).find(btn => {
+        const attr = btn.getAttribute('onclick');
+        return attr && attr.includes(panelId);
+    });
     if (mobileBtn) mobileBtn.classList.add('active');
 };
 
@@ -92,6 +115,7 @@ window.toggleThemeSystem = function() {
 // ==========================================================================
 function initAmbientBackground() {
     const canvas = document.getElementById('ambient-canvas');
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
     let w = canvas.width = window.innerWidth;
@@ -112,8 +136,15 @@ function initAmbientBackground() {
 
     function loop() {
         ctx.clearRect(0, 0, w, h);
-        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim() || '#ff6b8b';
-        ctx.globalAlpha = 0.15;
+        
+        // If secret pink mode is active, make the particles soft floating hearts/pink bubbles
+        if (document.body.classList.contains('cherry-theme')) {
+            ctx.fillStyle = '#ff8fa3';
+        } else {
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim() || '#ff6b8b';
+        }
+        
+        ctx.globalAlpha = 0.2;
 
         particles.forEach(p => {
             p.x += p.vx;
@@ -138,7 +169,6 @@ function addSystemXp(amount) {
     currentXp += amount;
     const oldLevel = currentLvl;
     
-    // Level boundary curve formula
     let calculatedLevel = 1;
     let xpTarget = 100;
     let tempXp = currentXp;
@@ -171,8 +201,10 @@ function renderSystemHudTelemetry() {
 
     const percentage = (tempXp / xpTarget) * 100;
     
-    document.getElementById('lvlOut').textContent = currentLvl;
-    document.getElementById('barOut').style.width = `${percentage}%`;
+    const lvlElement = document.getElementById('lvlOut');
+    const barElement = document.getElementById('barOut');
+    if (lvlElement) lvlElement.textContent = currentLvl;
+    if (barElement) barElement.style.width = `${percentage}%`;
     
     renderMilestonesDashboard();
     updateAchievementsMatrix();
@@ -183,6 +215,7 @@ function renderSystemHudTelemetry() {
 // ==========================================================================
 function renderTaskMatrixPool() {
     const container = document.getElementById('categorizedMatrixContainer');
+    if (!container) return;
     container.innerHTML = '';
 
     const combinedPool = { ...DEFAULT_TASK_POOL };
@@ -200,7 +233,6 @@ function renderTaskMatrixPool() {
             const row = document.createElement('div');
             row.className = 'matrix-interactive-row';
             
-            // Generate count label representation
             const currentQueueCount = currentWorkspaceQueue.filter(t => t.label === task.label).length;
 
             row.innerHTML = `
@@ -232,6 +264,7 @@ window.adjustQueueAmount = function(taskLabelEncoded, xpVal, delta) {
 
 function renderQueueReviewList() {
     const container = document.getElementById('stagedReview');
+    if (!container) return;
     container.innerHTML = '';
 
     if (currentWorkspaceQueue.length === 0) {
@@ -239,7 +272,6 @@ function renderQueueReviewList() {
         return;
     }
 
-    // Display simplified summary of selected elements
     const grouped = {};
     currentWorkspaceQueue.forEach(item => {
         grouped[item.label] = (grouped[item.label] || 0) + 1;
@@ -272,7 +304,6 @@ window.commitRoutineString = function() {
     databaseRoutines.unshift(newLedger);
     saveLocalState();
     
-    // Clear Workspace Input Controls
     currentWorkspaceQueue = [];
     titleInput.value = '';
     
@@ -280,7 +311,6 @@ window.commitRoutineString = function() {
     renderQueueReviewList();
     renderSavedLedgerPanels();
     
-    // Auto Navigate to Ledgers and Trigger Achievement Checks
     window.navigate('saved');
     triggerAchievementUnlock("first_led");
 };
@@ -313,6 +343,7 @@ window.addNewCustomTaskToPool = function() {
 // ==========================================================================
 function renderSavedLedgerPanels() {
     const container = document.getElementById('savedContainer');
+    if (!container) return;
     container.innerHTML = '';
 
     if (databaseRoutines.length === 0) {
@@ -344,7 +375,6 @@ function renderSavedLedgerPanels() {
         const body = document.createElement('div');
         body.className = 'timeline-card-body-accordion';
 
-        // Set up interactive accordion event listner
         header.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON') return;
             body.classList.toggle('open');
@@ -389,7 +419,6 @@ window.toggleTaskItemStatus = function(ledgerId, taskIndex) {
     saveLocalState();
     renderSavedLedgerPanels();
 
-    // Check achievement metrics on state alterations
     const isAllComplete = ledger.tasks.every(t => t.done);
     if (isAllComplete) {
         triggerAchievementUnlock("completionist");
@@ -410,6 +439,7 @@ window.purgeOperationalLedger = function(ledgerId, event) {
 // ==========================================================================
 function renderMilestonesDashboard() {
     const grid = document.getElementById('rewardsMatrixGrid');
+    if (!grid) return;
     grid.innerHTML = '';
 
     DEFAULT_MILESTONES.forEach(m => {
@@ -446,6 +476,7 @@ window.claimPlatformRewardNode = function(lvl) {
 
 function updateAchievementsMatrix() {
     const grid = document.getElementById('achievementsMatrixGrid');
+    if (!grid) return;
     grid.innerHTML = '';
 
     const localUnlockedStatus = JSON.parse(localStorage.getItem('unlockedAchievements')) || [];
@@ -486,6 +517,7 @@ function triggerAchievementUnlock(achId) {
 window.processCycleMetrics = function() {
     const anchorInput = document.getElementById('cycleAnchor');
     const outputGrid = document.getElementById('cycleOutputDashboard');
+    if (!anchorInput || !outputGrid) return;
     
     const anchorStr = anchorInput.value;
     if (!anchorStr) {
@@ -501,7 +533,6 @@ window.processCycleMetrics = function() {
     const timeDiff = today - anchorDate;
     const diffDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
     
-    // Cycle calculations based on standard cycle durations
     const cycleLength = 28;
     const currentDay = ((diffDays % cycleLength) + cycleLength) % cycleLength || 28;
 
@@ -534,10 +565,9 @@ window.processCycleMetrics = function() {
 // ==========================================================================
 window.triggerNetflixZoom = function() {
     const screen = document.getElementById('intro-screen');
-    const brand = document.querySelector('.intro-brand');
+    const brand = document.getElementById('introBrandText');
     const container = document.getElementById('app-container');
 
-    // Smooth transition steps
     brand.style.transition = "transform 0.9s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.8s ease";
     brand.style.transform = "scale(8)";
     brand.style.opacity = "0";
@@ -545,8 +575,70 @@ window.triggerNetflixZoom = function() {
     setTimeout(() => {
         screen.classList.add('hidden');
         container.classList.add('visible');
+        
+        // If they unlocked the letter, start rendering it line-by-line right after intro ends!
+        if (screen.classList.contains('cherry-intro')) {
+            startTypewriterLetterAnimation();
+        }
     }, 850);
 };
+
+// ==========================================================================
+// THE SECRET 8-MONTH ANNIVERSARY SURPRISE ENGINE
+// ==========================================================================
+window.triggerSecretLetter = function() {
+    const introScreen = document.getElementById('intro-screen');
+    const brandText = document.getElementById('introBrandText');
+    const actionBtn = document.getElementById('introActionBtn');
+
+    // 1. Trigger beautiful pastel pink layout transformation
+    document.body.classList.add('cherry-theme');
+    
+    // 2. Hide dashboard container temporarily
+    document.getElementById('app-container').classList.remove('visible');
+    
+    // 3. Reset and custom style the intro screen for her
+    introScreen.className = 'cherry-intro'; 
+    brandText.innerHTML = "HAPPY 8 MONTHS";
+    brandText.style.transform = "scale(1)";
+    brandText.style.opacity = "1";
+    actionBtn.textContent = "Open Surprise";
+    
+    // Switch navigation panel to the secret pane
+    window.navigate('secret');
+    
+    // Clear display container content first to start fresh
+    document.getElementById('letterTextDisplay').innerHTML = '';
+
+    // Bring the gorgeous intro card back to life
+    introScreen.classList.remove('hidden');
+};
+
+function startTypewriterLetterAnimation() {
+    const container = document.getElementById('letterTextDisplay');
+    container.innerHTML = ''; // Fresh clean slate
+    
+    // Break letter content into blocks/paragraphs
+    const lines = SECRET_LETTER_TEXT.split('\n');
+    
+    lines.forEach((lineText, index) => {
+        const lineElement = document.createElement('div');
+        lineElement.className = 'letter-line';
+        lineElement.textContent = lineText;
+        
+        // If line is empty, represent it nicely as a spacing block
+        if (lineText.trim() === '') {
+            lineElement.style.height = '1.5rem';
+        }
+        
+        container.appendChild(lineElement);
+        
+        // Stagger line reveal speeds beautifully
+        setTimeout(() => {
+            lineElement.classList.add('fade-in');
+        }, index * 1800); 
+    });
+}
 
 // ==========================================================================
 // MILESTONE AWARD REEEM MODAL
@@ -555,10 +647,9 @@ function triggerMilestoneModal(level) {
     const modal = document.getElementById('congratulationsRewardModal');
     const lvlText = document.getElementById('rewardMilestoneLevelText');
     
-    lvlText.textContent = level;
-    modal.classList.add('open');
+    if (lvlText) lvlText.textContent = level;
+    if (modal) modal.classList.add('open');
 
-    // Trigger milestone check tracking logic
     if (level >= 5) {
         triggerAchievementUnlock("level_five");
     }
@@ -583,15 +674,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initAmbientBackground();
     loadLocalState();
     
-    // Core workspace setups
     renderTaskMatrixPool();
     renderQueueReviewList();
     renderSavedLedgerPanels();
 
-    // Default dates for cycle setups
     const storedDate = localStorage.getItem('cycle_anchor_date');
     if (storedDate) {
-        document.getElementById('cycleAnchor').value = storedDate;
+        const anchorField = document.getElementById('cycleAnchor');
+        if (anchorField) anchorField.value = storedDate;
         window.processCycleMetrics();
     }
 });
