@@ -226,7 +226,7 @@ body.cherry-theme aside {
     transform: translateX(4px); 
 }
 
-/* Unique look for the Secret tab */
+/* Unique pulsing style for the Secret button */
 .secret-trigger-btn {
     border: 1px dashed var(--accent-glow);
     animation: heartPulse 2s infinite alternate;
@@ -275,7 +275,7 @@ body.cherry-theme aside {
 }
 
 /* ==========================================================================
-   MAIN DASHBOARD MAIN ARCHITECTURE
+   MAIN DASHBOARD ARCHITECTURE
    ========================================================================== */
 main { 
     flex-grow: 1; 
@@ -326,7 +326,7 @@ main {
 }
 
 /* ==========================================================================
-   CONTROL DECK DYNAMIC WORKSPACE MATRIX
+   CONTROL DECK WORKSPACE SECTIONS
    ========================================================================== */
 .workspace-split-view { 
     display: grid; 
@@ -487,7 +487,6 @@ main {
     cursor: pointer; 
     text-transform: uppercase; 
     letter-spacing: 0.5px; 
-    box-shadow: 0 8px 24px rgba(255, 71, 87, 0.2); 
 }
 
 .action-submit-btn:hover { 
@@ -496,7 +495,7 @@ main {
 }
 
 /* ==========================================================================
-   OPERATIONAL LEDGER COMPONENT TRACKING PANELS
+   OPERATIONAL LEDGER ACCORDIONS
    ========================================================================== */
 .routine-panel-container { 
     display: flex; 
@@ -544,14 +543,6 @@ main {
     gap: 16px; 
 }
 
-.sub-timeline-title { 
-    font-size: 0.9rem; 
-    font-weight: 800; 
-    color: var(--accent-glow); 
-    text-transform: uppercase; 
-    letter-spacing: 1.5px; 
-}
-
 .interactive-task-row { 
     background: var(--bg-surface-elevated); 
     border: 1px solid var(--border-glass); 
@@ -575,7 +566,6 @@ main {
     align-items: center; 
     gap: 18px; 
     font-weight: 600; 
-    font-size: 1.05rem; 
 }
 
 .premium-checkbox-wrapper input { 
@@ -585,7 +575,7 @@ main {
 }
 
 /* ==========================================================================
-   DISPLAY SHOWCASE GRIDS (REWARDS, ACHIEVEMENTS, ANALYTICS)
+   DISPLAY SHOWCASE GRIDS
    ========================================================================== */
 .rewards-showcase-grid, 
 .achievements-showcase-grid, 
@@ -608,26 +598,6 @@ main {
     box-shadow: var(--panel-shadow); 
 }
 
-.reward-node-card.claimable { 
-    border-color: var(--accent-glow); 
-    box-shadow: 0 0 30px rgba(255, 107, 139, 0.2); 
-}
-
-.reward-node-card.claimed { 
-    border-color: #10b981; 
-    background: rgba(16, 185, 129, 0.02); 
-}
-
-.node-tier-title { 
-    font-size: 1.4rem; 
-    font-weight: 900; 
-    color: var(--accent-glow); 
-}
-
-.reward-node-card.claimed .node-tier-title { 
-    color: #10b981; 
-}
-
 .node-trigger-btn { 
     width: 100%; 
     padding: 14px; 
@@ -639,38 +609,6 @@ main {
     border: 1px solid var(--accent-glow); 
     background: none; 
     color: var(--accent-glow); 
-    letter-spacing: 0.5px; 
-}
-
-.claimable .node-trigger-btn { 
-    background: var(--accent-gradient); 
-    color: #fff; 
-    border: none; 
-    box-shadow: 0 6px 20px rgba(255, 71, 87, 0.3); 
-}
-
-.claimed .node-trigger-btn { 
-    background: rgba(16, 185, 129, 0.1); 
-    color: #10b981; 
-    border: none; 
-    cursor: default; 
-}
-
-.achievement-node-card.unlocked { 
-    border-color: #f59e0b; 
-    background: rgba(245, 158, 11, 0.02); 
-    box-shadow: 0 0 25px rgba(245, 158, 11, 0.1); 
-}
-
-.badge-avatar-icon { 
-    font-size: 3rem; 
-    filter: grayscale(100%); 
-    opacity: 0.25; 
-}
-
-.unlocked .badge-avatar-icon { 
-    filter: grayscale(0); 
-    opacity: 1; 
 }
 
 .cycle-data-card { 
@@ -684,11 +622,10 @@ main {
 .cycle-data-card.active-phase { 
     opacity: 1; 
     border-color: var(--accent-glow); 
-    box-shadow: 0 0 25px rgba(255, 107, 139, 0.15); 
 }
 
 /* ==========================================================================
-   FLOATING OVERLAYS & MODALS
+   NAVIGATION HEADERS & FLOATING MODALS
    ========================================================================== */
 .utility-header-navigation { 
     display: flex; 
@@ -711,7 +648,6 @@ main {
     justify-content: center; 
     cursor: pointer; 
     font-size: 1.2rem; 
-    box-shadow: var(--panel-shadow); 
 }
 
 .identity-auth-panel { 
@@ -727,7 +663,6 @@ main {
     display: flex; 
     flex-direction: column; 
     gap: 16px; 
-    box-shadow: var(--panel-shadow); 
 }
 
 .drawer-modal-overlay { 
@@ -735,12 +670,10 @@ main {
     inset: 0; 
     background: rgba(3, 3, 5, 0.85); 
     backdrop-filter: blur(12px); 
-    -webkit-backdrop-filter: blur(12px); 
     z-index: 20000; 
     display: none; 
     align-items: center; 
     justify-content: center; 
-    padding: 24px; 
 }
 
 .drawer-modal-overlay.open { 
@@ -758,11 +691,10 @@ main {
     display: flex; 
     flex-direction: column; 
     gap: 24px; 
-    box-shadow: var(--panel-shadow); 
 }
 
 /* ==========================================================================
-   MOBILE NAVIGATION APPARATUS
+   MOBILE NAVIGATION BAR
    ========================================================================== */
 .mobile-dock-menu { 
     display: none; 
@@ -772,7 +704,6 @@ main {
     right: 0; 
     background: rgba(10, 10, 16, 0.88); 
     backdrop-filter: blur(20px); 
-    -webkit-backdrop-filter: blur(20px); 
     border-top: 1px solid var(--border-glass); 
     z-index: 9999; 
     justify-content: space-around; 
@@ -801,92 +732,149 @@ main {
 }
 
 /* ==========================================================================
-   THE SECRET ROMANTIC LETTER STYLING
+   THE ULTRA-PREMIUM 3D ENVELOPE OPENING ANIMATION
    ========================================================================== */
-.letter-layout-container {
-    max-width: 750px;
-    margin: 40px auto;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-glass);
-    padding: 60px 50px;
-    border-radius: 40px;
-    box-shadow: var(--panel-shadow);
-    text-align: center;
+.envelope-wrapper {
+    height: 480px;
+    margin-top: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1200px;
+}
+
+.envelope {
     position: relative;
-    overflow: hidden;
-    animation: roseGlow 4s infinite alternate;
+    width: 320px;
+    height: 220px;
+    background: #ff4d6d; /* Deep Cherry Red Pink */
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 30px 60px rgba(255, 77, 109, 0.25);
+    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-@keyframes roseGlow {
-    0% { box-shadow: 0 10px 40px rgba(255, 143, 163, 0.1); }
-    100% { box-shadow: 0 10px 40px rgba(255, 77, 109, 0.35); }
+.flap {
+    position: absolute;
+    top: 0;
+    width: 0;
+    height: 0;
+    border-left: 160px solid transparent;
+    border-right: 160px solid transparent;
+    border-top: 110px solid #ff4d6d;
+    border-bottom: 0 solid transparent;
+    z-index: 3;
+    transform-origin: top;
+    transition: transform 0.6s 0.2s ease, border-top-color 0.4s;
 }
 
-.heart-icon-indicator {
-    font-size: 3.5rem;
-    margin-bottom: 24px;
-    animation: beat 1.2s infinite alternate;
-    display: inline-block;
+.pocket {
+    position: absolute;
+    top: 0;
+    width: 320px;
+    height: 220px;
+    background: #ff758f; /* Lighter Pink Inner Pocket */
+    border-radius: 0 0 12px 12px;
+    z-index: 2;
 }
 
-@keyframes beat {
-    to { transform: scale(1.18); }
+/* The actual letter hidden inside the envelope pocket */
+.letter {
+    position: absolute;
+    bottom: 10px;
+    width: 300px;
+    height: 190px;
+    background: #ffffff;
+    margin: 0 10px;
+    border-radius: 8px;
+    z-index: 1;
+    transition: transform 0.8s 0.8s cubic-bezier(0.25, 1, 0.5, 1), 
+                width 0.8s 1s cubic-bezier(0.25, 1, 0.5, 1), 
+                height 0.8s 1s cubic-bezier(0.25, 1, 0.5, 1), 
+                margin-left 0.8s 1s cubic-bezier(0.25, 1, 0.5, 1);
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
-.cursive-letter-content {
-    font-family: 'Great Vibes', cursive, sans-serif;
-    font-size: 2.1rem;
+/* ==========================================================================
+   ENVELOPE OPEN STATE
+   ========================================================================== */
+.envelope-wrapper.open .flap {
+    transform: rotateX(180deg);
+    border-top-color: #ff758f;
+    z-index: 0;
+}
+
+.envelope-wrapper.open .letter {
+    transform: translateY(-280px); /* Lift out */
+    height: 520px;                  /* Stretch out */
+    width: 640px;                   /* Max out space */
+    margin-left: -160px;            /* Re-center widescreen sizing */
+    z-index: 10;
+    box-shadow: 0 20px 50px rgba(255, 77, 109, 0.2);
+}
+
+.letter-content {
+    font-family: 'Dancing Script', cursive, sans-serif;
+    font-size: 1.55rem;
+    color: #5c061a;
     line-height: 1.8;
-    color: var(--text-primary);
-    text-align: left;
-    white-space: pre-line; /* Preserves typing spacing and linebreaks */
-}
-
-/* Custom typewriter fading line animation */
-.letter-line {
+    white-space: pre-line;
     opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 1.5s ease, transform 1.5s ease;
-    margin-bottom: 20px;
+    transform: translateY(15px);
+    transition: opacity 1s 1.5s ease, transform 1s 1.5s ease;
 }
 
-.letter-line.fade-in {
+.envelope-wrapper.open .letter-content {
     opacity: 1;
     transform: translateY(0);
 }
 
+/* FLOATING HEARTS COMPONENT */
+.floating-hearts {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.heart {
+    position: absolute;
+    color: #ff8fa3;
+    animation: floatUp 4s linear forwards;
+    font-size: 1.6rem;
+}
+
+@keyframes floatUp {
+    0% {
+        transform: translateY(105vh) scale(0) rotate(0deg);
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateY(-10vh) scale(1.6) rotate(360deg);
+        opacity: 0;
+    }
+}
+
 /* ==========================================================================
-   MEDIA QUERY RESPONSIVENESS OVERRIDES
+   RESPONSIVENESS AND DISPLAY FIXES
    ========================================================================== */
 @media (max-width: 1120px) {
-    #app-container { 
-        flex-direction: column; 
+    #app-container { flex-direction: column; }
+    aside { display: none; }
+    .mobile-dock-menu { display: flex; }
+    main { padding: 40px 24px 140px 24px; gap: 32px; }
+    .workspace-split-view { grid-template-columns: 1fr; }
+    
+    /* Responsive adjustment for Mobile Letter sizes */
+    .envelope-wrapper.open .letter {
+        width: 90vw;
+        margin-left: -150px;
+        height: 480px;
+        transform: translateY(-260px);
     }
-    aside { 
-        display: none; 
-    }
-    .mobile-dock-menu { 
-        display: flex; 
-    }
-    main { 
-        padding: 40px 24px 140px 24px; 
-        gap: 32px; 
-    }
-    .workspace-split-view { 
-        grid-template-columns: 1fr; 
-        gap: 32px; 
-    }
-    .header-block h1 { 
-        font-size: 2.3rem; 
-    }
-    .identity-auth-panel { 
-        right: 24px; 
-        top: 120px; 
-    }
-    .letter-layout-container {
-        padding: 40px 20px;
-    }
-    .cursive-letter-content {
-        font-size: 1.6rem;
+    .letter-content {
+        font-size: 1.35rem;
     }
 }
