@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enterprise Task Core</title>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="intro-screen">
-        <div class="intro-brand" id="introBrandText">NAVANSHI <span>CORE</span></div>
-        <button class="intro-btn" id="introActionBtn" onclick="window.triggerNetflixZoom()">Initialize Matrix</button>
+        <div class="intro-brand" id="introBrandText">SYSTEM <span>CORE</span></div>
+        <button class="intro-btn" id="introActionBtn" onclick="window.triggerNetflixZoom()">Initialize Dashboard</button>
     </div>
 
     <canvas id="ambient-canvas"></canvas>
@@ -21,8 +21,8 @@
         <aside id="main-sidebar">
             <div class="profile-card">
                 <img id="userAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Identity Avatar">
-                <h3 id="userDisplayName">Navanshi</h3>
-                <p id="userAccountStatus">Offline Storage Array</p>
+                <h3 id="userDisplayName">Operator Console</h3>
+                <p id="userAccountStatus">System Storage Active</p>
             </div>
             
             <nav class="nav-group">
@@ -32,7 +32,6 @@
                 <button class="nav-btn" onclick="window.navigate('biometrics')">🩸 Cycle Analytics</button>
                 <button class="nav-btn" onclick="window.navigate('achievements')">⭐ Elite Badges</button>
                 <button class="nav-btn hidden" id="navBtnCustomizer" onclick="window.navigate('customizer')">⚙️ Profile Settings</button>
-                <button class="nav-btn secret-trigger-btn" onclick="window.triggerSecretLetter()">💖 Secret</button>
             </nav>
             
             <div class="hud-zone">
@@ -73,18 +72,18 @@
                     <p>Construct dynamic operational parameters and pipeline iterations.</p>
                 </div>
                 
-                <div style="background:var(--bg-surface); border:1px solid var(--border-glass); border-radius:24px; padding:24px; display:flex; align-items:center; justify-content:space-between; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); box-shadow:var(--panel-shadow);">
-                    <div style="display:flex; align-items:center; gap:20px;">
-                        <div id="spotIcon" style="width:48px; height:48px; background:#1ed760; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#000; font-weight:900; font-size:1.2rem; box-shadow:0 0 15px rgba(30,215,96,0.3);">♫</div>
+                <div class="spotify-integration-bar">
+                    <div class="spotify-info-group">
+                        <div id="spotIcon" class="spotify-icon">♫</div>
                         <div>
-                            <div style="font-weight:800; font-size:1.1rem; display:flex; align-items:center; gap:12px;">
+                            <div class="spotify-track-title">
                                 <span id="spotTrack">Telemetry Idle</span>
-                                <span class="hidden" id="musicXpBadge" style="background:rgba(30,215,96,0.15); color:#1ed760; font-size:0.75rem; padding:4px 10px; border-radius:30px; font-weight:800; border:1px solid rgba(30,215,96,0.3);">+0.2 XP SYNCING</span>
+                                <span class="hidden" id="musicXpBadge" class="spotify-xp-badge">+0.2 XP SYNCING</span>
                             </div>
-                            <div id="spotStatus" style="font-size:0.85rem; color:var(--text-secondary); margin-top:2px;">Spotify Audio Matrix Link Inactive</div>
+                            <div id="spotStatus" class="spotify-status-text">Spotify Audio Matrix Link Inactive</div>
                         </div>
                     </div>
-                    <button class="node-trigger-btn" id="spotLinkBtn" onclick="window.connectLiveSpotify()" style="border-color:#1ed760; color:#1ed760; width:auto; padding:12px 24px;">Link Audio Core</button>
+                    <button class="node-trigger-btn" id="spotLinkBtn" onclick="window.connectLiveSpotify()">Link Audio Core</button>
                 </div>
 
                 <div class="workspace-split-view">
@@ -97,7 +96,7 @@
                         <div class="queue-deck" id="stagedReview"></div>
                         <input type="text" id="registryTitle" class="input-premium-field" placeholder="Name this Operational Ledger...">
                         <button class="action-submit-btn" onclick="window.commitRoutineString()">Deploy Setup Ledger</button>
-                        <hr style="border:none; border-top:1px solid var(--border-glass); margin:12px 0;">
+                        <hr class="card-divider">
                         
                         <h2 style="font-size:1.2rem;">Inject Custom Component Matrix</h2>
                         <input type="text" id="customTaskName" class="input-premium-field" placeholder="Custom Component Matrix Label...">
@@ -128,8 +127,8 @@
                     <h1>Cycle Analytics <span>Dashboard</span></h1>
                     <p>Coordinate hormonal architecture configurations against targeted anchor timestamps.</p>
                 </div>
-                <div style="background:var(--bg-surface); border:1px solid var(--border-glass); padding:36px; border-radius:28px; max-width:500px; display:flex; flex-direction:column; gap:20px; box-shadow:var(--panel-shadow);">
-                    <label style="font-weight:800; font-size:1rem; letter-spacing:0.3px;">Anchor Matrix Base Date:</label>
+                <div class="analytics-input-card">
+                    <label class="input-label">Anchor Matrix Base Date:</label>
                     <input type="date" id="cycleAnchor" class="input-premium-field">
                     <button class="action-submit-btn" onclick="window.processCycleMetrics()">Compute Cycle Dashboard</button>
                 </div>
@@ -145,34 +144,21 @@
             </div>
 
             <div class="panel" id="panel-customizer">
-                <div style="max-width:600px; margin: 0 auto; background:var(--bg-surface); border:1px solid var(--border-glass); padding:44px; border-radius:32px; display:flex; flex-direction:column; gap:30px; box-shadow:var(--panel-shadow);">
-                    <h2 style="margin:0; font-size:1.6rem; font-weight:900; color:var(--accent-glow);">Configure Identity Configuration Layout</h2>
+                <div class="settings-card-wrapper">
+                    <h2 class="settings-title">Configure Identity Configuration Layout</h2>
                     <div style="text-align: center;">
-                        <img id="editProfAvatarPreview" src="" alt="Preview" style="width:110px; height:110px; border-radius:50%; border:3px solid var(--accent-glow); object-fit:cover; box-shadow:0 0 20px rgba(255,107,139,0.2);">
+                        <img id="editProfAvatarPreview" src="" alt="Preview" class="settings-avatar-preview">
                     </div>
-                    <form onsubmit="window.saveCustomUserProfileData(event)" style="display:flex; flex-direction:column; gap:16px;">
+                    <form onsubmit="window.saveCustomUserProfileData(event)" class="settings-form-layout">
                         <input type="text" id="editProfName" class="input-premium-field" placeholder="Full Signature Name">
                         <input type="text" id="editProfUsername" class="input-premium-field" placeholder="Unique Net Handle">
                         <input type="number" id="editProfAge" class="input-premium-field" placeholder="Operator Current Age">
                         <input type="date" id="editProfDate" class="input-premium-field">
                         <input type="text" id="editProfWeight" class="input-premium-field" placeholder="Standard Weight Parameters">
                         <input type="url" id="editProfAvatarUrl" class="input-premium-field" placeholder="Avatar Digital Image Source URL">
-                        <button type="submit" class="action-submit-btn" style="margin-top:12px;">Save Identity Data Configuration</button>
+                        <button type="submit" class="action-submit-btn">Save Identity Data Configuration</button>
                     </form>
                 </div>
-            </div>
-
-            <div class="panel" id="panel-secret">
-                <div class="envelope-wrapper" id="envelope">
-                    <div class="envelope">
-                        <div class="flap"></div>
-                        <div class="pocket"></div>
-                        <div class="letter">
-                            <div class="letter-content" id="letterTextDisplay"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="floating-hearts" id="heart-container"></div>
             </div>
 
         </main>
@@ -184,7 +170,6 @@
         <button class="mobile-dock-item" onclick="window.navigate('rewards')"><span class="mobile-dock-icon">🎁</span>Nodes</button>
         <button class="mobile-dock-item" onclick="window.navigate('biometrics')"><span class="mobile-dock-icon">🩸</span>Cycle</button>
         <button class="mobile-dock-item" onclick="window.navigate('achievements')"><span class="mobile-dock-icon">⭐</span>Badges</button>
-        <button class="mobile-dock-item secret-trigger-btn" onclick="window.triggerSecretLetter()"><span class="mobile-dock-icon">💖</span>Secret</button>
     </div>
 
     <div class="drawer-modal-overlay" id="congratulationsRewardModal">
