@@ -553,3 +553,26 @@
     }
 
 })();
+// ==========================================================================
+// ATELIER THEME MANAGEMENT ENGINE
+// ==========================================================================
+function toggleDarkModeTheme() {
+    // Toggles the dark-mode class on the body element
+    document.body.classList.toggle('dark-mode-active');
+    
+    // Saves the user's preference so it stays dark even if they refresh
+    const isDark = document.body.classList.contains('dark-mode-active');
+    localStorage.setItem('atelier-dark-mode', isDark ? 'true' : 'false');
+    
+    // Optional: Send a premium system toast notification
+    if (typeof showAtelierToast === 'function') {
+        showAtelierToast(isDark ? "Cobalt Deep Mode Activated" : "Cherry Blossom Mode Activated");
+    }
+}
+
+// Self-initializing check to apply the theme instantly on page load
+(function initAtelierTheme() {
+    if (localStorage.getItem('atelier-dark-mode') === 'true') {
+        document.body.classList.add('dark-mode-active');
+    }
+})();
