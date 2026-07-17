@@ -1,186 +1,286 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" class="elegant-runtime-environment">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Task Core</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="An exquisite, ultra-premium personal productivity deck curated exclusively for Navanshi.">
+    <title>Navanshi's Space — The Cherry Blossom Atelier</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="curated-bloom-experience">
 
-    <div id="intro-screen">
-        <div class="intro-brand" id="introBrandText">SYSTEM <span>CORE</span></div>
-        <button class="intro-btn" id="introActionBtn" onclick="window.triggerNetflixZoom()">Initialize Dashboard</button>
+    <div class="ambient-background-glows" aria-hidden="true">
+        <div class="glow-orb primary-glow"></div>
+        <div class="glow-orb secondary-glow"></div>
+        <div class="glow-orb tertiary-glow"></div>
     </div>
+    <div class="fine-grid-overlay" aria-hidden="true"></div>
 
-    <canvas id="ambient-canvas"></canvas>
-
-    <div id="app-container">
-        
-        <aside id="main-sidebar">
-            <div class="profile-card">
-                <img id="userAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Identity Avatar">
-                <h3 id="userDisplayName">Operator Console</h3>
-                <p id="userAccountStatus">System Storage Active</p>
+    <div id="intro-screen" class="portal-viewport">
+        <div class="portal-glass-panel">
+            <div class="portal-brand-signature">
+                <svg class="delicate-flower-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 20C42 35 30 40 15 40C30 45 42 50 50 65C58 50 70 45 85 40C70 40 58 35 50 20Z" fill="url(#cherry-gradient)"/>
+                    <path d="M50 35C45 45 35 48 25 48C35 51 45 54 50 64C55 54 65 51 75 48C65 48 55 45 50 35Z" fill="#FFF" opacity="0.6"/>
+                    <defs>
+                        <linearGradient id="cherry-gradient" x1="15" y1="20" x2="85" y2="65" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#FFB7C5"/>
+                            <stop offset="100%" stop-color="#E05A70"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1 class="portal-headline">Hi, Navanshi</h1>
+                <p class="portal-monograph">A sanctuary designed for your goals and rhythms.</p>
             </div>
             
-            <nav class="nav-group">
-                <button class="nav-btn active" onclick="window.navigate('create')">⚡ Control Deck</button>
-                <button class="nav-btn" onclick="window.navigate('saved')">📋 Operational Ledger</button>
-                <button class="nav-btn" onclick="window.navigate('rewards')">🎁 Node Progression</button>
-                <button class="nav-btn" onclick="window.navigate('biometrics')">🩸 Cycle Analytics</button>
-                <button class="nav-btn" onclick="window.navigate('achievements')">⭐ Elite Badges</button>
-                <button class="nav-btn hidden" id="navBtnCustomizer" onclick="window.navigate('customizer')">⚙️ Profile Settings</button>
-            </nav>
-            
-            <div class="hud-zone">
-                <div class="hud-stats">
-                    <span>RANK <span id="lvlOut">1</span></span>
-                    <span style="color:var(--accent-glow);">CORE PROGRESS</span>
+            <div class="interactive-trigger-housing">
+                <button class="portal-activation-btn" id="portalEnterBtn" onclick="triggerElegantEntry()">
+                    <span class="btn-ripple"></span>
+                    <span class="btn-text-content">Enter Workspace</span>
+                    <svg class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="portal-footer">
+            <span>The Atelier Core — System Initialization V4.0</span>
+        </div>
+    </div>
+
+    <div id="app-canvas" class="atelier-app-canvas hidden-canvas">
+        
+        <aside class="sidebar-terminal">
+            <div class="sidebar-identity">
+                <div class="identity-avatar-container">
+                    <div class="avatar-ring-pulse"></div>
+                    <img id="userAvatarFrame" class="identity-avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150" alt="Navanshi's Profile">
                 </div>
-                <div class="xp-bar-outer">
-                    <div class="xp-bar-inner" id="barOut"></div>
+                <div class="identity-metadata">
+                    <h2 class="identity-title" id="sidebarUserName">Navanshi</h2>
+                    <p class="identity-tier">Curator Status</p>
+                </div>
+            </div>
+
+            <nav class="navigation-deck" aria-label="Main system interface navigation">
+                <button class="nav-control-element active" data-target="deck" onclick="switchTab('deck')">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <span>Control Deck</span>
+                </button>
+                <button class="nav-control-element" data-target="ledger" onclick="switchTab('ledger')">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>Ledger Workspace</span>
+                </button>
+                <button class="nav-control-element" data-target="analytics" onclick="switchTab('analytics')">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15.5h-2v-2h2v2zm0-4h-2v-6h2v6z"></path>
+                    </svg>
+                    <span>Cycle Analytics</span>
+                </button>
+                <button class="nav-control-element" data-target="settings" onclick="switchTab('settings')">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span>Atelier Settings</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-hud-progress">
+                <div class="hud-labels">
+                    <span class="hud-level-indicator">LEVEL <span id="levelOutput">1</span></span>
+                    <span class="hud-xp-label">XP ARCHIVE</span>
+                </div>
+                <div class="hud-progress-track">
+                    <div class="hud-progress-fill" id="xpProgressFillBar"></div>
                 </div>
             </div>
         </aside>
 
-        <main id="main-content-area">
-            <div class="utility-header-navigation" id="utility-nav">
-                <div class="circular-action-trigger" onclick="window.toggleThemeSystem()">🌗</div>
-                <div class="circular-action-trigger" onclick="window.toggleAuthDrawer()">👤</div>
-
-                <div class="identity-auth-panel hidden" id="authActionsDrawer">
-                    <div id="authFormFields">
-                        <h4 style="margin:0 0 14px 0; text-align:center; font-size:1.1rem;" id="authFormTitle">Sync Core Registry</h4>
-                        <input type="email" id="authEmail" class="input-premium-field" placeholder="Security Email" style="margin-bottom:12px;">
-                        <input type="password" id="authPassword" class="input-premium-field" placeholder="Access Cipher Key" style="margin-bottom:12px;">
-                        <div id="registerExtraFields" class="hidden">
-                            <input type="text" id="authUsername" class="input-premium-field" placeholder="Username Signature" style="margin-bottom:12px;">
-                            <input type="url" id="authAvatarUrl" class="input-premium-field" placeholder="Avatar Matrix Link" style="margin-bottom:12px;">
-                        </div>
-                        <button class="action-submit-btn" id="authSubmitBtn" onclick="window.processEmailAuth()" style="width:100%;">Authorize</button>
-                        <div style="font-size:0.85rem; color:var(--accent-glow); text-align:center; cursor:pointer; margin-top:14px; font-weight:700;" id="authToggleText" onclick="window.toggleAuthMode()">Request Cloud Node? Register</div>
-                    </div>
-                    <button class="hidden" id="logoutBtn" style="border:1px solid #ff4757; color:#ff4757; width:100%; padding:16px; background:none; border-radius:16px; cursor:pointer; font-weight:800; text-transform:uppercase; font-size:0.85rem;" onclick="window.logoutUser()">Disconnect Sync Link</button>
-                </div>
-            </div>
-
-            <div class="panel active" id="panel-create">
-                <div class="header-block">
-                    <h1>System <span>Control Deck</span></h1>
-                    <p>Construct dynamic operational parameters and pipeline iterations.</p>
+        <main class="main-stage">
+            
+            <header class="workspace-utility-bar">
+                <div class="dynamic-breadcrumb-trail">
+                    <span class="breadcrumb-root">Sanctuary</span>
+                    <span class="breadcrumb-divider">/</span>
+                    <span class="breadcrumb-active" id="activeBreadcrumb">Control Deck</span>
                 </div>
                 
-                <div class="spotify-integration-bar">
-                    <div class="spotify-info-group">
-                        <div id="spotIcon" class="spotify-icon">♫</div>
-                        <div>
-                            <div class="spotify-track-title">
-                                <span id="spotTrack">Telemetry Idle</span>
-                                <span class="hidden" id="musicXpBadge" class="spotify-xp-badge">+0.2 XP SYNCING</span>
+                <div class="realtime-clock-display" id="systemClock">00:00:00 PM</div>
+            </header>
+
+            <section id="tab-deck" class="workspace-panel active">
+                <div class="panel-prologue">
+                    <h3 class="panel-major-heading">Operational Control Deck</h3>
+                    <p class="panel-minor-text">Curate your day, construct pipelines, and activate modular task blocks.</p>
+                </div>
+
+                <div class="modular-workspace-grid">
+                    <div class="ateliar-glass-card">
+                        <div class="card-interior-header">
+                            <span class="step-badge">01</span>
+                            <div>
+                                <h4 class="card-interior-title">Atelier Task Templates</h4>
+                                <p class="card-interior-subtitle">Configure parameters and select daily targets</p>
                             </div>
-                            <div id="spotStatus" class="spotify-status-text">Spotify Audio Matrix Link Inactive</div>
+                        </div>
+                        
+                        <div class="dynamic-categories-container" id="taskPoolTarget">
+                            </div>
+                    </div>
+
+                    <div class="ateliar-glass-card">
+                        <div class="card-interior-header">
+                            <span class="step-badge">02</span>
+                            <div>
+                                <h4 class="card-interior-title">Operational Deployment Queue</h4>
+                                <p class="card-interior-subtitle">Review active targets before database commit</p>
+                            </div>
+                        </div>
+
+                        <div class="deployment-queue-wrapper">
+                            <div class="queue-inner-list-frame" id="stagedQueueTarget">
+                                </div>
+                            
+                            <div class="deployment-meta-inputs">
+                                <div class="floating-label-input-group">
+                                    <input type="text" id="ledgerTitleNameInput" class="atelier-elegant-input" placeholder=" " required>
+                                    <label for="ledgerTitleNameInput" class="floating-label">Ledger Identifier Name</label>
+                                </div>
+                                <button class="atelier-luxury-btn" onclick="commitStagedQueue()">
+                                    <span>Deploy System Ledger</span>
+                                    <svg class="btn-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path d="M5 12h14M12 5l7 7-7 7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <hr class="elegant-section-divider">
+                            
+                            <div class="custom-node-injector">
+                                <h5 class="sub-section-title">Inject Dynamic Node Parameter</h5>
+                                <div class="inline-input-row">
+                                    <input type="text" id="customNodeLabel" class="atelier-elegant-input" placeholder="Node Name...">
+                                    <input type="number" id="customNodeXpValue" class="atelier-elegant-input" placeholder="XP Weight (Max 50)...">
+                                </div>
+                                <button class="atelier-secondary-action-btn" onclick="injectCustomNodeToAtelier()">Inject System Node</button>
+                            </div>
                         </div>
                     </div>
-                    <button class="node-trigger-btn" id="spotLinkBtn" onclick="window.connectLiveSpotify()">Link Audio Core</button>
+                </div>
+            </section>
+
+            <section id="tab-ledger" class="workspace-panel">
+                <div class="panel-prologue">
+                    <h3 class="panel-major-heading">Verified Operational Ledgers</h3>
+                    <p class="panel-minor-text">Execute real-time pipeline verifications against your active database nodes.</p>
+                </div>
+                
+                <div class="ledger-database-grid" id="ledgersDatabaseTarget">
+                    </div>
+            </section>
+
+            <section id="tab-analytics" class="workspace-panel">
+                <div class="panel-prologue">
+                    <h3 class="panel-major-heading">Cycle Analytics Engine</h3>
+                    <p class="panel-minor-text">Correlate daily workflows, physical optimization thresholds, and biological rhythms.</p>
                 </div>
 
-                <div class="workspace-split-view">
-                    <div class="studio-card">
-                        <h2>1. Select System Iteration Modules</h2>
-                        <div class="matrix-scroll-deck" id="categorizedMatrixContainer"></div>
-                    </div>
-                    <div class="studio-card">
-                        <h2>2. Commit Deployment Pipeline</h2>
-                        <div class="queue-deck" id="stagedReview"></div>
-                        <input type="text" id="registryTitle" class="input-premium-field" placeholder="Name this Operational Ledger...">
-                        <button class="action-submit-btn" onclick="window.commitRoutineString()">Deploy Setup Ledger</button>
-                        <hr class="card-divider">
+                <div class="cycle-dashboard-split">
+                    <div class="ateliar-glass-card static-width-metric">
+                        <div class="card-interior-header">
+                            <span class="step-badge">🩸</span>
+                            <div>
+                                <h4 class="card-interior-title">Chronological Anchor</h4>
+                                <p class="card-interior-subtitle">Configure your biological reference anchor parameters</p>
+                            </div>
+                        </div>
                         
-                        <h2 style="font-size:1.2rem;">Inject Custom Component Matrix</h2>
-                        <input type="text" id="customTaskName" class="input-premium-field" placeholder="Custom Component Matrix Label...">
-                        <input type="number" id="customTaskXp" class="input-premium-field" placeholder="Reward Allocation Points (Max 30 XP)...">
-                        <button class="node-trigger-btn" onclick="window.addNewCustomTaskToPool()">Inject Block Node</button>
+                        <div class="anchor-configuration-form">
+                            <div class="floating-label-input-group">
+                                <input type="date" id="cycleAnchorField" class="atelier-elegant-input" placeholder=" " required>
+                                <label for="cycleAnchorField" class="floating-label">Reference Anchor Date</label>
+                            </div>
+                            <button class="atelier-luxury-btn" onclick="executeCycleChronometrics()">Compute Rhythms</button>
+                        </div>
+                    </div>
+
+                    <div class="cycle-dynamic-outputs-container">
+                        <div class="dynamic-biological-results" id="cycleChronologyGrid">
+                            </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="panel" id="panel-saved">
-                <div class="header-block">
-                    <h1>Operational <span>Ledger Trackers</span></h1>
-                    <p>Execute real-time confirmation checks against verified live deployment records.</p>
+            <section id="tab-settings" class="workspace-panel">
+                <div class="panel-prologue">
+                    <h3 class="panel-major-heading">Atelier Configuration Node</h3>
+                    <p class="panel-minor-text">Establish personal identity constants, avatars, and interface parameters.</p>
                 </div>
-                <div class="routine-panel-container" id="savedContainer"></div>
-            </div>
 
-            <div class="panel" id="panel-rewards">
-                <div class="header-block">
-                    <h1>Node Progression <span>Matrix</span></h1>
-                    <p>Unlock advanced processing access clearances as your rank level crosses active thresholds.</p>
-                </div>
-                <div class="rewards-showcase-grid" id="rewardsMatrixGrid"></div>
-            </div>
+                <div class="settings-center-alignment-frame">
+                    <div class="ateliar-glass-card settings-max-width">
+                        <div class="card-interior-header">
+                            <span class="step-badge">⚙️</span>
+                            <div>
+                                <h4 class="card-interior-title">Atelier Identity Parameters</h4>
+                                <p class="card-interior-subtitle">Manage runtime global state fields</p>
+                            </div>
+                        </div>
 
-            <div class="panel" id="panel-biometrics">
-                <div class="header-block">
-                    <h1>Cycle Analytics <span>Dashboard</span></h1>
-                    <p>Coordinate hormonal architecture configurations against targeted anchor timestamps.</p>
-                </div>
-                <div class="analytics-input-card">
-                    <label class="input-label">Anchor Matrix Base Date:</label>
-                    <input type="date" id="cycleAnchor" class="input-premium-field">
-                    <button class="action-submit-btn" onclick="window.processCycleMetrics()">Compute Cycle Dashboard</button>
-                </div>
-                <div class="cycle-dashboard-grid" id="cycleOutputDashboard"></div>
-            </div>
+                        <form id="globalAtelierSettingsForm" class="atelier-settings-form-element" onsubmit="commitAtelierIdentity(event)">
+                            <div class="floating-label-input-group">
+                                <input type="text" id="settingSignatureName" class="atelier-elegant-input" placeholder=" " required>
+                                <label for="settingSignatureName" class="floating-label">User Signature Name</label>
+                            </div>
 
-            <div class="panel" id="panel-achievements">
-                <div class="header-block">
-                    <h1>Elite Badges <span>Vault</span></h1>
-                    <p>System achievements unlocked through continuous task deployment consistency.</p>
-                </div>
-                <div class="achievements-showcase-grid" id="achievementsMatrixGrid"></div>
-            </div>
+                            <div class="floating-label-input-group">
+                                <input type="number" id="settingUserAge" class="atelier-elegant-input" placeholder=" " required>
+                                <label for="settingUserAge" class="floating-label">Chronological Age Parameter</label>
+                            </div>
 
-            <div class="panel" id="panel-customizer">
-                <div class="settings-card-wrapper">
-                    <h2 class="settings-title">Configure Identity Configuration Layout</h2>
-                    <div style="text-align: center;">
-                        <img id="editProfAvatarPreview" src="" alt="Preview" class="settings-avatar-preview">
+                            <div class="floating-label-input-group">
+                                <input type="url" id="settingAvatarUrl" class="atelier-elegant-input" placeholder=" ">
+                                <label for="settingAvatarUrl" class="floating-label">Avatar Asset URL Target</label>
+                            </div>
+
+                            <button type="submit" class="atelier-luxury-btn">Commit Identity Changes</button>
+                        </form>
                     </div>
-                    <form onsubmit="window.saveCustomUserProfileData(event)" class="settings-form-layout">
-                        <input type="text" id="editProfName" class="input-premium-field" placeholder="Full Signature Name">
-                        <input type="text" id="editProfUsername" class="input-premium-field" placeholder="Unique Net Handle">
-                        <input type="number" id="editProfAge" class="input-premium-field" placeholder="Operator Current Age">
-                        <input type="date" id="editProfDate" class="input-premium-field">
-                        <input type="text" id="editProfWeight" class="input-premium-field" placeholder="Standard Weight Parameters">
-                        <input type="url" id="editProfAvatarUrl" class="input-premium-field" placeholder="Avatar Digital Image Source URL">
-                        <button type="submit" class="action-submit-btn">Save Identity Data Configuration</button>
-                    </form>
                 </div>
-            </div>
+            </section>
 
         </main>
     </div>
 
-    <div class="mobile-dock-menu" id="mobile-dock">
-        <button class="mobile-dock-item active" onclick="window.navigate('create')"><span class="mobile-dock-icon">⚡</span>Deck</button>
-        <button class="mobile-dock-item" onclick="window.navigate('saved')"><span class="mobile-dock-icon">📋</span>Ledger</button>
-        <button class="mobile-dock-item" onclick="window.navigate('rewards')"><span class="mobile-dock-icon">🎁</span>Nodes</button>
-        <button class="mobile-dock-item" onclick="window.navigate('biometrics')"><span class="mobile-dock-icon">🩸</span>Cycle</button>
-        <button class="mobile-dock-item" onclick="window.navigate('achievements')"><span class="mobile-dock-icon">⭐</span>Badges</button>
-    </div>
+    <div id="atelierToastSystem" class="toast-system-holder" aria-live="polite"></div>
 
-    <div class="drawer-modal-overlay" id="congratulationsRewardModal">
-        <div class="modal-glass-container">
-            <div style="font-size:3.5rem; filter: drop-shadow(0 0 15px rgba(245,158,11,0.4));">🏆</div>
-            <h2 style="margin:0; background: linear-gradient(135deg, #6ee7b7, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size:1.8rem; font-weight:900;">Milestone Achieved!</h2>
-            <p style="font-size:1.05rem; color:var(--text-secondary); margin:0; line-height:1.5;">Your platform interaction metrics cleared authentication requirements for Level <span id="rewardMilestoneLevelText" style="color:var(--accent-glow); font-weight:800;">0</span>.</p>
-            <button class="action-submit-btn" onclick="window.selectRewardPathOption()">Redeem Tracking Path</button>
+    <div class="glass-modal-overlay" id="levelUpOverlayContainer">
+        <div class="premium-modal-frame">
+            <div class="celebration-bloom-icon">🌸</div>
+            <h2 class="celebration-title">Progress Threshold Cleared</h2>
+            <p class="celebration-detail">Your activity metrics cleared the parameters required to unlock level <span id="rewardLvlIndicator">0</span>!</p>
+            <button class="atelier-luxury-btn" onclick="dismissLevelUpOverlay()">
+                <span>Acknowledge Rewards</span>
+            </button>
         </div>
     </div>
 
-    <script src="app.js"></script>
 </body>
 </html>
