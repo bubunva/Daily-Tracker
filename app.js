@@ -33,23 +33,6 @@ const DEFAULT_ACHIEVEMENTS = [
     { id: "completionist", label: "Execution Master", details: "Successfully execute and verify every component on any operational ledger.", xp: 200, unlocked: false }
 ];
 
-// ROMANTIC ANNIVERSARY WRITTEN LETTER STRING
-const SECRET_LETTER_TEXT = `Hey,
-
-I know it started eight months ago. But during those eight months, you have become someone irreplaceable in my life. I cannot replace you even if I wanted to. I love you a lot.
-
-I just want to tell you that the letter I wrote is not AI, and it was never AI. I wrote it, but if you think it's AI, I wanna say everything I want to with my words. Like, I'm speaking this out, but, you know, the Google keyboard is typing it.
-
-If you don't feel like you're not loved, I just want you to remember that everything I do is for you. For you to feel better. And no, I don't want to replace you. I don't want to look for someone else because I love you. I want to be with you, forever. And it's my choice to be with you. I have chosen you for life. I hope you have done the same.
-
-I don't know how your mind is working right now, but I'm trying to imprint myself as much as I can. And yeah, I will keep trying. And I, I don't know that you know that I care a lot for you. Because I really do try a lot. And yeah.
-
-I'm sorry for not being the streamer, especially, but I'll try my best, okay?
-
-I love you. Bye-bye.
-
-Happy eight months, baby. ❤️`;
-
 // State Drivers
 let currentXp = 0;
 let currentLvl = 1;
@@ -123,9 +106,9 @@ function initAmbientBackground() {
     const particles = Array.from({ length: 45 }, () => ({
         x: Math.random() * w,
         y: Math.random() * h,
-        r: Math.random() * 2.5 + 0.5,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4
+        r: Math.random() * 2 + 0.5,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3
     }));
 
     window.addEventListener('resize', () => {
@@ -135,12 +118,8 @@ function initAmbientBackground() {
 
     function loop() {
         ctx.clearRect(0, 0, w, h);
-        if (document.body.classList.contains('cherry-theme')) {
-            ctx.fillStyle = '#ff8fa3';
-        } else {
-            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim() || '#ff6b8b';
-        }
-        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent-glow').trim() || '#3b82f6';
+        ctx.globalAlpha = 0.15;
 
         particles.forEach(p => {
             p.x += p.vx;
@@ -264,7 +243,7 @@ function renderQueueReviewList() {
     container.innerHTML = '';
 
     if (currentWorkspaceQueue.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding: 24px; color:var(--text-secondary); font-size:0.95rem;">Queue is empty. Select modules.</div>`;
+        container.innerHTML = `<div style="text-align:center; padding: 16px; color:var(--text-secondary); font-size:0.85rem;">Queue is empty. Select modules.</div>`;
         return;
     }
 
@@ -343,7 +322,7 @@ function renderSavedLedgerPanels() {
     container.innerHTML = '';
 
     if (databaseRoutines.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding: 48px; color:var(--text-secondary); font-weight:700;">No active operational ledgers found. Design one in the Control Deck.</div>`;
+        container.innerHTML = `<div style="text-align:center; padding: 32px; color:var(--text-secondary); font-weight:600; font-size:0.95rem;">No active operational ledgers found. Design one in the Control Deck.</div>`;
         return;
     }
 
@@ -359,12 +338,12 @@ function renderSavedLedgerPanels() {
         header.className = 'timeline-card-header';
         header.innerHTML = `
             <div>
-                <span style="font-size:1.15rem; display:block; font-weight:800;">${ledger.title}</span>
+                <span style="font-size:1.1rem; display:block; font-weight:700;">${ledger.title}</span>
                 <span style="font-size:0.8rem; color:var(--text-secondary); font-weight:500;">Deployed: ${new Date(ledger.timestamp).toLocaleString()}</span>
             </div>
-            <div style="display:flex; align-items:center; gap:16px;">
-                <span style="color:var(--accent-glow); font-size:1.1rem; font-weight:900;">${completePercent}%</span>
-                <button onclick="window.purgeOperationalLedger('${ledger.id}', event)" style="background:none; border:none; cursor:pointer; font-size:1.3rem;">🗑️</button>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="color:var(--accent-glow); font-size:1rem; font-weight:800;">${completePercent}%</span>
+                <button onclick="window.purgeOperationalLedger('${ledger.id}', event)" style="background:none; border:none; cursor:pointer; font-size:1.15rem;">🗑️</button>
             </div>
         `;
 
@@ -387,7 +366,7 @@ function renderSavedLedgerPanels() {
                     <input type="checkbox" ${task.done ? 'checked' : ''} onchange="window.toggleTaskItemStatus('${ledger.id}', ${index})">
                     <span>${task.label}</span>
                 </div>
-                <div style="font-weight:900; font-size:0.95rem; color:var(--accent-glow);">+${task.xp} XP</div>
+                <div style="font-weight:700; font-size:0.85rem; color:var(--accent-glow);">+${task.xp} XP</div>
             `;
             listWrap.appendChild(row);
         });
@@ -453,9 +432,9 @@ function renderMilestonesDashboard() {
         }
 
         card.innerHTML = `
-            <div class="node-tier-title">LEVEL ${m.level}</div>
-            <div style="font-weight:700; font-size:1.15rem;">${m.rewardName}</div>
-            <p style="margin:0; font-size:0.85rem; color:var(--text-secondary); line-height:1.4;">${m.details}</p>
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-glow); text-transform: uppercase;">LEVEL ${m.level}</div>
+            <div style="font-weight:700; font-size:1.1rem;">${m.rewardName}</div>
+            <p style="margin:0; font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">${m.details}</p>
             <button class="node-trigger-btn" ${!isLevelMet || isClaimed ? 'disabled' : ''} onclick="window.claimPlatformRewardNode(${m.level})">${actionBtnText}</button>
         `;
         grid.appendChild(card);
@@ -482,10 +461,10 @@ function updateAchievementsMatrix() {
         card.className = `achievement-node-card ${isUnlocked ? 'unlocked' : ''}`;
         
         card.innerHTML = `
-            <div class="badge-avatar-icon">💎</div>
-            <div style="font-weight:900; font-size:1.25rem;">${ach.label}</div>
-            <p style="margin:0; font-size:0.85rem; color:var(--text-secondary); line-height:1.4;">${ach.details}</p>
-            <div style="font-size:0.8rem; font-weight:800; color:var(--accent-glow); text-transform:uppercase;">Reward: +${ach.xp} XP</div>
+            <div style="font-size:2rem; margin-bottom: 4px;">🏆</div>
+            <div style="font-weight:700; font-size:1.1rem;">${ach.label}</div>
+            <p style="margin:0; font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">${ach.details}</p>
+            <div style="font-size:0.75rem; font-weight:700; color:var(--accent-glow); text-transform:uppercase;">Reward: +${ach.xp} XP</div>
         `;
         grid.appendChild(card);
     });
@@ -541,10 +520,10 @@ window.processCycleMetrics = function() {
         const card = document.createElement('div');
         card.className = `cycle-data-card ${isActive ? 'active-phase' : ''}`;
         card.innerHTML = `
-            <div style="font-weight:900; font-size:1.25rem; margin-bottom:8px;">${p.title}</div>
-            <p style="margin:0 0 16px 0; font-size:0.9rem; color:var(--text-secondary); line-height:1.4;">${p.desc}</p>
-            <div style="font-weight:800; font-size:0.8rem; color:${isActive ? 'var(--accent-glow)' : 'var(--text-secondary)'}; text-transform:uppercase;">
-                ${isActive ? '🔴 ACTIVE INTERNAL HORMONAL BIOMETRIC STATE' : 'STANDBY PHASE STATUS'}
+            <div style="font-weight:700; font-size:1.1rem; margin-bottom:6px;">${p.title}</div>
+            <p style="margin:0 0 12px 0; font-size:0.8rem; color:var(--text-secondary); line-height:1.4;">${p.desc}</p>
+            <div style="font-weight:700; font-size:0.75rem; color:${isActive ? 'var(--accent-glow)' : 'var(--text-secondary)'}; text-transform:uppercase;">
+                ${isActive ? '● Active Hormonal Phase' : 'Standby'}
             </div>
         `;
         outputGrid.appendChild(card);
@@ -559,84 +538,15 @@ window.triggerNetflixZoom = function() {
     const brand = document.getElementById('introBrandText');
     const container = document.getElementById('app-container');
 
-    brand.style.transition = "transform 0.9s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.8s ease";
+    brand.style.transition = "transform 0.8s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.7s ease";
     brand.style.transform = "scale(8)";
     brand.style.opacity = "0";
 
     setTimeout(() => {
         screen.classList.add('hidden');
         container.classList.add('visible');
-        
-        if (screen.classList.contains('cherry-intro')) {
-            startEnvelopeOpeningSequence();
-        }
-    }, 850);
+    }, 750);
 };
-
-// ==========================================================================
-// THE SECRET 8-MONTH ANNIVERSARY GORGEOUS SURPRISE DRIVER
-// ==========================================================================
-let heartSpawningInterval = null;
-
-window.triggerSecretLetter = function() {
-    const introScreen = document.getElementById('intro-screen');
-    const brandText = document.getElementById('introBrandText');
-    const actionBtn = document.getElementById('introActionBtn');
-
-    // 1. Shift CSS system variables to Cherry Theme pinks
-    document.body.classList.add('cherry-theme');
-    
-    // 2. Clear out active app views
-    document.getElementById('app-container').classList.remove('visible');
-    
-    // 3. Re-inject Custom Romantic Netflix Title Cards
-    introScreen.className = 'cherry-intro'; 
-    brandText.innerHTML = "HAPPY 8 MONTHS";
-    brandText.style.transform = "scale(1)";
-    brandText.style.opacity = "1";
-    actionBtn.textContent = "Open Surprise";
-    
-    // 4. Force state to the secret panel
-    window.navigate('secret');
-    
-    const env = document.getElementById('envelope');
-    env.classList.remove('open');
-    document.getElementById('letterTextDisplay').innerHTML = '';
-
-    introScreen.classList.remove('hidden');
-
-    if (heartSpawningInterval) clearInterval(heartSpawningInterval);
-    heartSpawningInterval = setInterval(createFloatingHeartsSystem, 280);
-};
-
-function startEnvelopeOpeningSequence() {
-    const env = document.getElementById('envelope');
-    const textDisplay = document.getElementById('letterTextDisplay');
-    
-    setTimeout(() => {
-        env.classList.add('open');
-        textDisplay.innerHTML = SECRET_LETTER_TEXT;
-    }, 600);
-}
-
-function createFloatingHeartsSystem() {
-    const container = document.getElementById('heart-container');
-    if (!container) return;
-
-    const heartSymbols = ["❤️", "💖", "🌸", "💕", "🎀"];
-    const heart = document.createElement('div');
-    heart.className = 'heart';
-    heart.innerHTML = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
-    
-    heart.style.left = Math.random() * 100 + 'vw';
-    heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
-    
-    container.appendChild(heart);
-    
-    setTimeout(() => {
-        heart.remove();
-    }, 4000);
-}
 
 // ==========================================================================
 // CONGRATULATION UTILITY DRAWERS
