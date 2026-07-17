@@ -1,1 +1,233 @@
+/* ==========================================================================
+   NAVANCHI'S ATELIER — MODULE SPECIFIC MATRIX & GRID LAYOUTS
+   ========================================================================== */
 
+/* --- 1. THE STRUCTURAL GRID MANAGER --- */
+.workspace-grid {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 48px;
+    align-items: start;
+    width: 100%;
+}
+
+/* --- 2. THE EXPANSIVE WHITE SPACE CONTROLLERS --- */
+.panel-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+}
+
+.panel-heading {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 3rem;
+    font-weight: 400;
+    color: var(--text-charcoal);
+    letter-spacing: -0.5px;
+}
+
+.panel-subheading {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    max-width: 700px;
+}
+
+/* --- 3. TEMPLATE POOL FLOW & INTERACTIVE AREAS --- */
+.tasks-scroll-area {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    max-height: 680px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+/* Custom Module Interior Spacing */
+.glass-card {
+    background: var(--panel-glass);
+    border: 1px solid var(--border-luxurious);
+    border-radius: var(--border-radius-luxurious-lg);
+    padding: 44px;
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow: var(--shadow-soft-atelier), var(--shadow-inset-glass);
+    transition: var(--transition-buttery-smooth);
+}
+
+.glass-card:hover {
+    box-shadow: var(--shadow-luxurious-deep), var(--shadow-inset-glass);
+    transform: translateY(-4px);
+    background: var(--panel-glass-hover);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.card-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gradient-cherry-linear);
+    color: #FFF;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-glow-button);
+}
+
+.card-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: var(--text-charcoal);
+}
+
+/* --- 4. QUEUE STAGING & INTAKE MODULES --- */
+.queue-inner-area {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+}
+
+.staged-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 120px;
+}
+
+/* Form Group Structural Layouts */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.field-label {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--cherry-blossom-dark);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding-left: 4px;
+}
+
+/* --- 5. INTERFACE ELEMENT REFINEMENTS --- */
+.elegant-input {
+    width: 100%;
+    padding: 18px 24px;
+    background: var(--panel-glass-solid);
+    border: 1px solid var(--border-luxurious);
+    border-radius: var(--border-radius-luxurious-md);
+    outline: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-charcoal);
+    box-shadow: var(--shadow-inset-glass);
+    transition: var(--transition-snappy);
+}
+
+.elegant-input:focus {
+    border-color: var(--border-luxurious-active);
+    background: #FFF;
+    box-shadow: var(--shadow-soft-atelier);
+}
+
+.elegant-btn {
+    background: var(--gradient-cherry-linear);
+    border: none;
+    outline: none;
+    padding: 18px 36px;
+    border-radius: var(--border-radius-luxurious-md);
+    color: #FFF;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: var(--shadow-glow-button);
+    transition: var(--transition-elastic);
+    width: 100%;
+}
+
+.elegant-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 45px -5px rgba(224, 90, 112, 0.45);
+}
+
+/* --- 6. CYCLE PLATFORM EXPANSION TILES --- */
+.analytics-layout {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 48px;
+    align-items: start;
+}
+
+.cycle-results-deck {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 28px;
+}
+
+/* --- 7. INDIVIDUAL IDENTITY CONFIGURATION PANEL --- */
+.settings-center-card {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.settings-center-card .glass-card {
+    width: 100%;
+    max-width: 700px;
+}
+
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* --- 8. GLOBAL CONTENT ENVELOPES --- */
+.content-container {
+    flex-grow: 1;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.tab-panel {
+    display: none;
+    flex-direction: column;
+    gap: 48px;
+}
+
+.tab-panel.active {
+    display: flex;
+}
+
+/* --- 9. ATMOSPHERIC UTILITY RESPONSIVENESS --- */
+@media (max-width: 1400px) {
+    .workspace-grid,
+    .analytics-layout {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+}
