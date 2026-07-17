@@ -1425,4 +1425,68 @@ body.curated-bloom-experience {
     .static-width-metric {
         position: static;
     }
+}/* ==========================================================================
+   COBALT DEEP DARK MODE ARCHITECTURE
+   ========================================================================== */
+
+/* Dark Mode Button Tweaks */
+.theme-toggle-node {
+    margin-top: auto;
+    border-top: 1px solid var(--border-luxurious) !important;
+    background: rgba(224, 90, 112, 0.05);
+}
+
+/* Variable Overrides when Dark Mode Class is Active */
+body.dark-mode-active {
+    --text-charcoal: #FFFFFF;
+    --text-muted: #8F9BB3;
+    --panel-glass: rgba(8, 0, 113, 0.15);
+    --panel-glass-hover: rgba(8, 0, 113, 0.25);
+    --panel-glass-solid: #0A0A12;
+    --border-luxurious: rgba(8, 0, 113, 0.4);
+    --border-luxurious-active: #080071;
+    --shadow-soft-atelier: 0 20px 50px rgba(0, 0, 0, 0.7);
+    --shadow-luxurious-deep: 0 30px 70px rgba(8, 0, 113, 0.3);
+    --gradient-cherry-linear: linear-gradient(135deg, #080071 0%, #020035 100%);
+    --shadow-glow-button: 0 8px 25px rgba(8, 0, 113, 0.4);
+}
+
+/* Background Shifts for Dark Mode */
+body.dark-mode-active.curated-bloom-experience {
+    background-color: #000000 !important;
+}
+
+body.dark-mode-active .portal-viewport {
+    background: #000000;
+}
+
+/* Ambient Neon Shifts */
+body.dark-mode-active .primary-glow {
+    background: radial-gradient(circle, rgba(8, 0, 113, 0.6) 0%, transparent 70%);
+}
+
+body.dark-mode-active .secondary-glow {
+    background: radial-gradient(circle, rgba(2, 0, 53, 0.8) 0%, transparent 70%);
+}
+
+body.dark-mode-active .ateliar-glass-card,
+body.dark-mode-active .glass-card {
+    background: rgba(10, 10, 18, 0.6) !important;
+    border: 1px solid rgba(8, 0, 113, 0.3) !important;
+}
+
+body.dark-mode-active .sidebar-terminal {
+    background: rgba(5, 5, 10, 0.8);
+    border-right: 1px solid rgba(8, 0, 113, 0.2);
+}
+
+body.dark-mode-active .elegant-input, 
+body.dark-mode-active .atelier-elegant-input {
+    background: #05050A !important;
+    color: #FFF !important;
+}
+
+body.dark-mode-active .nav-control-element.active {
+    background: rgba(8, 0, 113, 0.2);
+    color: #4D4DFF;
 }
