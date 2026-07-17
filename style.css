@@ -796,7 +796,7 @@ main {
 }
 
 /* ==========================================================================
-   ENVELOPE OPEN STATE (RE-CENTERED MATRIX)
+   ENVELOPE OPEN STATE (FIXED DEAD CENTER VIEWPORT ALIGNMENT)
    ========================================================================== */
 .envelope-wrapper.open .flap {
     transform: rotateX(180deg);
@@ -804,15 +804,20 @@ main {
     z-index: 0;
 }
 
-/* Slides perfectly up and scales to screen center */
+/* Slides up, transitions to fixed screen-center position, and scales beautifully */
 .envelope-wrapper.open .letter {
-    transform: translate3d(0, -180px, 100px);
-    height: 520px;
-    width: 640px;
-    /* Negative margin pulls the wider container perfectly centered horizontally */
-    margin-left: -160px; 
-    z-index: 10;
-    box-shadow: 0 20px 50px rgba(255, 77, 109, 0.35);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    height: 540px;
+    width: 680px;
+    max-width: 90vw;
+    max-height: 80vh;
+    margin: 0; /* Clear previous offsets */
+    z-index: 10000; /* Ensure it stays above everything, including navbars */
+    box-shadow: 0 25px 60px rgba(255, 77, 109, 0.4);
+    bottom: auto; /* Overrides absolute positioning */
 }
 
 .letter-content {
@@ -823,7 +828,7 @@ main {
     white-space: pre-line;
     opacity: 0;
     transform: translateY(15px);
-    transition: opacity 1s 1.5s ease, transform 1s 1.5s ease;
+    transition: opacity 1s 1.2s ease, transform 1s 1.2s ease;
 }
 
 .envelope-wrapper.open .letter-content {
@@ -857,7 +862,7 @@ main {
     }
 }
 
-/* Responsive adjustments to maintain center alignment on mobile */
+/* Responsive adjustments to maintain absolute screen centering on mobile */
 @media (max-width: 1120px) {
     #app-container { flex-direction: column; }
     aside { display: none; }
@@ -866,22 +871,14 @@ main {
     .workspace-split-view { grid-template-columns: 1fr; }
     
     .envelope-wrapper.open .letter {
-        width: 85vw;
-        max-width: 450px;
-        /* Dynamic responsive margin offsets to keep letter centered */
-        margin-left: calc(-85vw / 2 + 150px);
-        height: 440px;
-        transform: translate3d(0, -160px, 50px);
-    }
-    
-    /* Ensure smaller screens keep center calculation clean */
-    @media (max-width: 500px) {
-        .envelope-wrapper.open .letter {
-            margin-left: calc(-85vw / 2 + 140px);
-        }
+        width: 90vw;
+        height: 70vh;
+        max-height: 500px;
+        transform: translate(-50%, -50%) scale(1);
     }
     
     .letter-content {
         font-size: 1.25rem;
+        line-height: 1.6;
     }
 }
